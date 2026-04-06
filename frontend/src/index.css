@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+
+/* =============================================
+   GLOBAL COLOR PALETTE
+   All colors are defined here as CSS variables.
+   To change a color, update it here and it
+   updates everywhere across the app.
+   ============================================= */
+
+
+:root {
+  /* Primary greens */
+  --color-primary:       #1C7C54;
+  --color-primary-light: #73E2A7;
+  --color-primary-dark:  #1B512D;
+
+  /* Secondary yellowy-greens */
+  --color-secondary:       #B1CF5F;
+  --color-secondary-light: #DEF4C6;
+
+  /* Backgrounds */
+  --color-bg:          #FFFFFF;
+  --color-bg-soft:     #F2FAF0;  /* very light green tint */
+  --color-bg-muted:    #E8F5E2;  /* slightly deeper soft green */
+
+  /* Text */
+  --color-text:        #1B512D;  /* dark green for headings */
+  --color-text-body:   #1C7C54;  /* medium green for body */
+  --color-text-muted:  #4A7C61;  /* muted green for secondary text */
+
+  /* Borders */
+  --color-border:      #DEF4C6;
+
+  /* Whites / surfaces */
+  --color-white:       #FFFFFF;
+  --color-surface:     #FFFFFF;
+}
+
+/* Base body styles */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-body);
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: weight;
+  font-style: normal;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection highlight */
+::selection {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
