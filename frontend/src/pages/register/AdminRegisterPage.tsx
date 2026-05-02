@@ -1,353 +1,189 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-
-/* ============================================================
-   ADMIN REGISTRATION PAGE
-   - Left panel: green branding + admin feature highlights
-   - Right panel: registration form
-   - Fields: Full Name, Email, Admin ID, Department, Password
-   - Note: This page would normally be invite-only.
-     For the prototype, it's accessible at /register/admin
-     but in production, access should be restricted.
-   ============================================================ */
-
-// Department options for the select dropdown
-const DEPARTMENTS = [
-  'Transit Operations',
-  'Campus Security',
-  'Student Affairs',
-  'Facilities Management',
-];
+import { Link, useNavigate } from 'react-router-dom';
+import { ShieldCheck, BarChart3, Users, Truck, Eye, EyeOff, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
+import { supabase } from "../../lib/superbaseClient";
 
 export default function AdminRegisterPage() {
-  const [form, setForm] = useState({
-    fullName:   '',
-    email:      '',
-    adminId:    '',
-    department: '',
-    password:   '',
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Status Notification State
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | null, msg: string }>({
+    type: null,
+    msg: ''
   });
 
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  }
+  const [form, setForm] = useState({ 
+    fullName: '', 
+    email: '', 
+    password: '' 
+  });
 
-  function handleSubmit(e: React.FormEvent) {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Admin registration:', form);
-    // TODO: call Supabase signUp + set role as 'admin' + flag for super-admin approval
-  }
+    setLoading(true);
+    setStatus({ type: null, msg: '' });
 
-  // Shared input style — keeps all inputs consistent
-  const inputStyle: React.CSSProperties = {
-    background:  'var(--color-bg-soft)',
-    border:      '1.5px solid var(--color-border)',
-    color:       'var(--color-text)',
+    // 1. Auth Sign Up
+    const { data, error: authError } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+    });
+
+    if (authError) {
+      setStatus({ type: 'error', msg: authError.message });
+      setLoading(false);
+      return;
+    }
+
+    // 2. Database Insert into 'users' table
+    const { error: dbError } = await supabase.from("users").insert([
+      {
+        auth_id: data.user?.id,
+        full_name: form.fullName,
+        email: form.email,
+        role: "admin",
+        status: "pending_verification" // Admins usually require manual backend activation
+      },
+    ]);
+
+    if (dbError) {
+      setStatus({ type: 'error', msg: "System error: " + dbError.message });
+      setLoading(false);
+    } else {
+      setStatus({ type: 'success', msg: 'Access Request Sent! Redirecting...' });
+      setLoading(false);
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    }
   };
 
-  function onFocus(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) {
-    e.currentTarget.style.borderColor = 'var(--color-primary)';
-  }
-  function onBlur(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) {
-    e.currentTarget.style.borderColor = 'var(--color-border)';
-  }
-
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg-soft)' }}>
-
-      {/* ── Navbar ── */}
-      <header
-        className="fixed top-0 w-full z-50 h-16 flex items-center px-8 shadow-sm"
-        style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)' }}
-      >
-        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-          <Link
-            to="/"
-            className="text-xl font-bold"
-            style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-          >
-            Academic Velocity
-          </Link>
-
-          <div className="hidden md:flex gap-8 items-center text-sm font-semibold">
-            {['Features', 'How It Works', 'Routes'].map(label => (
-              <a
-                key={label}
-                href="#"
-                className="transition-colors duration-150"
-                style={{ color: 'var(--color-text-muted)' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
-              >
-                {label}
-              </a>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3 text-sm font-semibold">
-            <Link to="/login" style={{ color: 'var(--color-text-muted)' }}>Login</Link>
-            <Link
-              to="/register"
-              className="px-5 py-2 rounded-lg text-white"
-              style={{ background: 'var(--color-primary)' }}
-            >
-              Sign Up
-            </Link>
-          </div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
+      
+      {/* Floating Status Notification */}
+      {status.type && (
+        <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border transition-all animate-in fade-in slide-in-from-top-4 duration-300 ${
+          status.type === 'success' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+            : 'bg-rose-50 border-rose-200 text-rose-800'
+        }`}>
+          {status.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+          <span className="font-bold text-sm tracking-tight">{status.msg}</span>
         </div>
-      </header>
+      )}
 
-      {/* ── Main ── */}
-      <main
-        className="flex-1 pt-24 pb-16 px-6 flex items-center justify-center"
-        style={{ background: 'var(--color-secondary-light)' }}
-      >
-        <div
-          className="w-full max-w-5xl flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-lg"
-          style={{ background: 'var(--color-white)' }}
-        >
-
-          {/* ── Left: info panel ── */}
-          <div
-            className="w-full md:w-5/12 p-10 md:p-14 flex flex-col justify-center relative overflow-hidden text-white"
-            style={{ background: 'linear-gradient(160deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)' }}
-          >
-            {/* Subtle glow blobs */}
-            <div
-              className="absolute -top-10 -left-10 w-40 h-40 rounded-full pointer-events-none"
-              style={{ background: 'rgba(255,255,255,0.08)', filter: 'blur(40px)' }}
-            />
-            <div
-              className="absolute -bottom-20 -right-20 w-64 h-64 rounded-full pointer-events-none"
-              style={{ background: 'rgba(255,255,255,0.06)', filter: 'blur(60px)' }}
-            />
-
-            <div className="relative z-10">
-              {/* Icon */}
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-8"
-                style={{ background: 'rgba(255,255,255,0.15)' }}
-              >
-                🛡️
-              </div>
-
-              <h1
-                className="text-4xl font-extrabold tracking-tight mb-3 leading-tight"
-                style={{ fontFamily: 'Manrope, sans-serif' }}
-              >
-                Administrator Access
-              </h1>
-              <p className="text-lg mb-10" style={{ color: 'rgba(255,255,255,0.8)' }}>
-                Empowering Campus Mobility
-              </p>
-
-              {/* Feature list */}
-              <ul className="space-y-6">
-                {[
-                  { icon: '🚌', title: 'Fleet Control',        desc: 'Manage shuttle deployments and real-time route adjustments.' },
-                  { icon: '📊', title: 'Real-time Analytics',  desc: 'Visualize transit demand patterns and campus congestion data.' },
-                  { icon: '👥', title: 'Driver Oversight',     desc: 'Monitor schedules, performance metrics, and safety compliance.' },
-                ].map(({ icon, title, desc }) => (
-                  <li key={title} className="flex items-start gap-4">
-                    <span className="text-xl mt-0.5">{icon}</span>
-                    <div>
-                      <h3 className="font-semibold text-sm mb-0.5" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                        {title}
-                      </h3>
-                      <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,0.65)' }}>
-                        {desc}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      <div className="w-full max-w-4xl grid md:grid-cols-2 bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100">
+        
+        {/* Left Side: Admin Features (Dark Theme) */}
+        <div className="p-8 md:p-10 bg-slate-900 text-white flex flex-col relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-lime-400/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+          
+          <div className="inline-flex p-3 bg-lime-400/10 text-lime-400 rounded-xl mb-4 w-fit">
+            <ShieldCheck size={28} />
           </div>
-
-          {/* ── Right: form ── */}
-          <div className="w-full md:w-7/12 p-10 md:p-14">
-            <div className="max-w-md mx-auto">
-
-              {/* Heading */}
-              <div className="mb-8">
-                <h2
-                  className="text-2xl font-bold mb-1"
-                  style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-                >
-                  Create Admin Account
-                </h2>
-                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                  Provide your official university credentials to request access.
-                </p>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-5">
-
-                {/* Full Name */}
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                    Full Name
-                  </label>
-                  <input
-                    name="fullName"
-                    type="text"
-                    placeholder="Dr. Sarah Jenkins"
-                    value={form.fullName}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                    style={inputStyle}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
-                  />
-                </div>
-
-                {/* University Email */}
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                    University Email
-                  </label>
-                  <input
-                    name="email"
-                    type="email"
-                    placeholder="s.jenkins@university.edu"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                    style={inputStyle}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
-                  />
-                  <p className="mt-1.5 text-xs italic" style={{ color: 'var(--color-text-muted)' }}>
-                    Must end in a valid .edu domain for validation.
-                  </p>
-                </div>
-
-                {/* Admin ID + Department (side by side) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                      Staff / Admin ID
-                    </label>
-                    <input
-                      name="adminId"
-                      type="text"
-                      placeholder="ADM-9942"
-                      value={form.adminId}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                      style={inputStyle}
-                      onFocus={onFocus}
-                      onBlur={onBlur}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                      Department
-                    </label>
-                    <select
-                      name="department"
-                      value={form.department}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150 appearance-none"
-                      style={{
-                        ...inputStyle,
-                        color: form.department ? 'var(--color-text)' : 'var(--color-text-muted)',
-                      }}
-                      onFocus={onFocus}
-                      onBlur={onBlur}
-                    >
-                      <option value="" disabled>Select Dept</option>
-                      {DEPARTMENTS.map(dept => (
-                        <option key={dept} value={dept}>{dept}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Password */}
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                    Secure Password
-                  </label>
-                  <input
-                    name="password"
-                    type="password"
-                    placeholder="Min. 8 characters"
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                    minLength={8}
-                    className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                    style={inputStyle}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
-                  />
-                </div>
-
-                {/* Submit */}
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="w-full py-3.5 rounded-xl font-bold text-sm text-white flex items-center justify-center gap-2 shadow-md transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
-                    style={{ background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)' }}
-                  >
-                    Request Admin Account
-                    <span>→</span>
-                  </button>
-                </div>
-
-              </form>
-
-              {/* Sign in link */}
-              <p className="mt-8 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                Already have an account?{' '}
-                <Link
-                  to="/login"
-                  className="font-bold"
-                  style={{ color: 'var(--color-primary)' }}
-                >
-                  Sign In
-                </Link>
-              </p>
-
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer
-        className="py-10 px-8 border-t"
-        style={{ background: 'var(--color-bg-muted)', borderColor: 'var(--color-border)' }}
-      >
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-text-muted)' }}>
-            © {new Date().getFullYear()} Academic Velocity. The Fluid Campus Transit Initiative.
+          <h2 className="text-3xl font-black mb-3 leading-tight tracking-tighter">
+            Admin <br/> Console.
+          </h2>
+          <p className="text-slate-400 font-medium text-sm mb-8 leading-relaxed">
+            University transit management and fleet oversight.
           </p>
-          <div className="flex flex-wrap justify-center gap-6">
-            {['Privacy Policy', 'Terms of Service', 'Campus Map', 'Support'].map(label => (
-              <a
-                key={label}
-                href="#"
-                className="text-xs font-semibold uppercase tracking-wide underline underline-offset-4 transition-colors duration-150"
-                style={{ color: 'var(--color-text-muted)' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
-              >
-                {label}
-              </a>
+          
+          <div className="space-y-5 mt-auto">
+            {[
+              { icon: <Truck size={18} />, label: 'Fleet Control' },
+              { icon: <BarChart3 size={18} />, label: 'Analytics' },
+              { icon: <Users size={18} />, label: 'Staffing' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 group">
+                <div className="text-lime-400 group-hover:scale-110 transition-transform">
+                  {item.icon}
+                </div>
+                <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
+                  {item.label}
+                </span>
+              </div>
             ))}
+            
+            <div className="mt-4 pt-4 border-t border-slate-800">
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">Security Status</p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-2 h-2 bg-lime-400 rounded-full animate-pulse" />
+                <span className="text-[11px] font-bold text-slate-300 italic">Encrypted Connection Active</span>
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
 
+        {/* Right Side: Compact Form */}
+        <div className="p-8 md:p-10 lg:p-12 flex flex-col justify-center">
+          <div className="mb-6">
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight underline decoration-lime-500 decoration-4 underline-offset-4">Request Access</h3>
+            <p className="text-slate-400 font-bold text-[11px] mt-2 uppercase tracking-widest">Verification Required</p>
+          </div>
+
+          <form className="space-y-4" onSubmit={handleSignup}>
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Legal Name</label>
+              <input 
+                required
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
+                placeholder="Admin Staff Name" 
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">University Email</label>
+              <input 
+                required
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
+                placeholder="staff@university.edu" 
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Access Password</label>
+              <div className="relative">
+                <input 
+                  required
+                  type={showPassword ? "text" : "password"} 
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all pr-12 text-sm font-medium" 
+                  placeholder="••••••••" 
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-lime-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <button 
+              disabled={loading}
+              className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-base hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group mt-4 disabled:opacity-50"
+            >
+              {loading ? "Processing..." : "Submit Request"} 
+              {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+            </button>
+          </form>
+          
+          <p className="mt-8 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">
+            Back to <Link to="/" className="text-slate-900 border-b-2 border-lime-500 ml-1">Home</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

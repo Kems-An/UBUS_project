@@ -1,168 +1,105 @@
 import { Link } from 'react-router-dom';
+import { GraduationCap, Bus, ShieldAlert, ArrowRight } from 'lucide-react';
 
-/* ============================================================
-   REGISTER ROLE SELECTION PAGE
-   - Shown when user clicks "Sign Up" from the Navbar
-   - Three cards: Student, Driver, Admin
-   - Each card links to the correct registration page
-   - Simple, clean, no form here — just role routing
-   ============================================================ */
-
-// The three registration roles
 const roles = [
   {
-    id:          'student',
-    icon:        '🎓',
-    title:       'Student',
-    desc:        'Register as a student to book seats, track shuttles, and manage your campus commute.',
-    link:        '/register/student',
-    badge:       null,
+    id: 'student',
+    icon: <GraduationCap size={32} />,
+    title: 'Student',
+    desc: 'Book seats, track shuttles in real-time, and manage your daily campus commute effortlessly.',
+    link: '/register/student',
+    badge: null,
     buttonLabel: 'Register as Student',
+    color: 'bg-lime-400',
   },
   {
-    id:          'driver',
-    icon:        '🚌',
-    title:       'Driver',
-    desc:        'Apply to join our campus transit network. Your account will require admin approval.',
-    link:        '/register/driver',
-    badge:       'Requires Approval',
+    id: 'driver',
+    icon: <Bus size={32} />,
+    title: 'Driver',
+    desc: 'Join our transit network. Apply to become a verified campus driver. Requires background check.',
+    link: '/register/driver',
+    badge: 'Pending Review',
     buttonLabel: 'Apply as Driver',
+    color: 'bg-slate-900 text-white',
   },
   {
-    id:          'admin',
-    icon:        '🛡️',
-    title:       'Admin',
-    desc:        'Admin accounts are created by the system administrator. Contact your university IT office.',
-    link:        '/register/admin',
-    badge:       'Restricted Access',
-    buttonLabel: 'Register as Admin',
+    id: 'admin',
+    icon: <ShieldAlert size={32} />,
+    title: 'Admin',
+    desc: 'Restricted to university transit staff and IT. Manage fleet logistics and user permissions.',
+    link: '/register/admin',
+    badge: 'Staff Only',
+    buttonLabel: 'Request Admin Access',
+    color: 'bg-slate-100 text-slate-400',
   },
 ];
 
 export default function RegisterRolePage() {
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg-soft)' }}>
-
-      {/* ── Navbar ── */}
-      <header
-        className="fixed top-0 w-full z-50 h-16 flex items-center px-8 shadow-sm"
-        style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)' }}
-      >
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      {/* --- Glass Navbar --- */}
+      <header className="fixed top-0 w-full z-50 h-20 flex items-center px-8 bg-white/70 backdrop-blur-xl border-b border-slate-200/50">
         <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-          <Link
-            to="/"
-            className="text-xl font-bold"
-            style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-          >
-            Academic Velocity
+          <Link to="/" className="text-2xl font-black text-slate-900 tracking-tighter">
+            ACADEMIC<span className="text-lime-500">VELOCITY</span>
           </Link>
-          <div className="flex items-center gap-3 text-sm font-semibold">
-            <Link to="/login" style={{ color: 'var(--color-text-muted)' }}>
-              Already have an account? <span style={{ color: 'var(--color-primary)' }}>Sign In</span>
-            </Link>
+          <div className="text-sm font-bold text-slate-500">
+            Already have an account? <Link to="/login" className="text-slate-900 border-b-2 border-lime-400 ml-1">Sign In</Link>
           </div>
         </div>
       </header>
 
-      {/* ── Main ── */}
-      <main className="flex-1 flex flex-col items-center justify-center pt-16 px-6 py-16">
-
-        {/* Heading */}
-        <div className="text-center mb-12 max-w-xl">
-          <span
-            className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4"
-            style={{ background: 'var(--color-secondary-light)', color: 'var(--color-primary-dark)' }}
-          >
-            Create an Account
+      {/* --- Role Selection Grid --- */}
+      <main className="flex-1 flex flex-col items-center justify-center pt-32 pb-20 px-6">
+        <div className="text-center mb-16 max-w-2xl">
+          <span className="px-4 py-1.5 rounded-full bg-lime-400/10 text-lime-700 text-[10px] font-black uppercase tracking-[0.2em] mb-6 inline-block">
+            Getting Started
           </span>
-          <h1
-            className="text-4xl font-bold mb-3"
-            style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-          >
-            Who are you registering as?
+          <h1 className="text-5xl font-black text-slate-900 mb-6 tracking-tight leading-tight">
+            Choose your journey.
           </h1>
-          <p className="text-base" style={{ color: 'var(--color-text-muted)' }}>
-            Choose your role to get started with the right registration form.
+          <p className="text-lg text-slate-500 font-medium leading-relaxed">
+            Select the role that fits your campus needs. Each account type offers a tailored transit experience.
           </p>
         </div>
 
-        {/* Role cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
-          {roles.map(({ id, icon, title, desc, link, badge, buttonLabel }) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
+          {roles.map((role) => (
             <div
-              key={id}
-              className="flex flex-col p-8 rounded-2xl border transition-all duration-200"
-              style={{
-                background:   'var(--color-white)',
-                borderColor:  'var(--color-border)',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
+              key={role.id}
+              className="group relative bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl flex flex-col"
             >
-              {/* Icon */}
-              <div
-                className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl mb-5"
-                style={{ background: 'var(--color-bg-muted)' }}
-              >
-                {icon}
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-8 transition-transform duration-500 group-hover:scale-110 ${role.color}`}>
+                {role.icon}
               </div>
 
-              {/* Title + badge */}
-              <div className="flex items-center gap-2 mb-2">
-                <h2
-                  className="text-xl font-bold"
-                  style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-                >
-                  {title}
-                </h2>
-                {badge && (
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
-                    style={{ background: 'var(--color-secondary-light)', color: 'var(--color-primary-dark)' }}
-                  >
-                    {badge}
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-2xl font-black text-slate-900">{role.title}</h2>
+                {role.badge && (
+                  <span className="text-[9px] font-black px-2 py-1 bg-slate-100 text-slate-500 rounded-md uppercase tracking-wider">
+                    {role.badge}
                   </span>
                 )}
               </div>
 
-              {/* Description */}
-              <p className="text-sm leading-relaxed mb-8 flex-1" style={{ color: 'var(--color-text-muted)' }}>
-                {desc}
+              <p className="text-slate-500 font-medium leading-relaxed mb-10 flex-1">
+                {role.desc}
               </p>
 
-              {/* CTA button — disabled for admin */}
-              {link ? (
-                <Link
-                  to={link}
-                  className="w-full py-3 rounded-xl font-bold text-sm text-center text-white transition-all duration-150 hover:-translate-y-0.5"
-                  style={{ background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)' }}
-                >
-                  {buttonLabel}
-                </Link>
-              ) : (
-                <button
-                  disabled
-                  className="w-full py-3 rounded-xl font-bold text-sm text-center cursor-not-allowed"
-                  style={{ background: 'var(--color-bg-muted)', color: 'var(--color-text-muted)' }}
-                >
-                  {buttonLabel}
-                </button>
-              )}
+              <Link
+                to={role.link}
+                className="w-full py-4 rounded-2xl font-bold text-sm text-center transition-all flex items-center justify-center gap-2 bg-slate-900 text-white hover:bg-slate-800"
+              >
+                {role.buttonLabel} <ArrowRight size={16} />
+              </Link>
             </div>
           ))}
         </div>
-
       </main>
 
-      {/* ── Minimal footer ── */}
-      <footer
-        className="border-t py-6 px-8 text-center text-xs"
-        style={{ background: 'var(--color-white)', borderColor: 'var(--color-border)', color: 'var(--color-text-muted)' }}
-      >
-        © {new Date().getFullYear()} Academic Velocity. All rights reserved. ·{' '}
-        <a href="#" className="underline" style={{ color: 'var(--color-primary)' }}>Privacy Policy</a>
+      <footer className="py-10 text-center border-t border-slate-100 bg-white text-slate-400 text-sm font-medium">
+        © {new Date().getFullYear()} Academic Velocity · Smart Campus Logistics
       </footer>
-
     </div>
   );
 }

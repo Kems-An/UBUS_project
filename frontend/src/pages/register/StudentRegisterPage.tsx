@@ -1,415 +1,214 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-
-/* ============================================================
-   STUDENT REGISTRATION PAGE
-   - Shared Navbar (full)
-   - Left side: editorial content + feature highlights
-   - Right side: registration form card
-   - Fields: Full Name, Email, Student ID, Phone, Password
-   - Terms checkbox + submit
-   - Shared Footer
-   ============================================================ */
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom'; // Added useNavigate
+import { Zap, Eye, EyeOff, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
+import { supabase } from "../../lib/superbaseClient";
 
 export default function StudentRegisterPage() {
-  // Form state
-  const [form, setForm] = useState({
-    fullName:  '',
-    email:     '',
-    studentId: '',
-    phone:     '',
-    password:  '',
-    agreed:    false,
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Status Notification State
+  const [status, setStatus] = useState<{ type: 'success' | 'error' | null, msg: string }>({
+    type: null,
+    msg: ''
   });
 
-  // Generic change handler for text inputs
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value, type, checked } = e.target;
-    setForm(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  }
+  const [form, setForm] = useState({ 
+    fullName: '', email: '', studentId: '', phone: '', password: '', agreed: false 
+  });
 
-  // Handle form submit (connect to Supabase later)
-  function handleSubmit(e: React.FormEvent) {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Student registration:', form);
-    // TODO: call Supabase signUp here
-  }
+    if (!form.agreed) {
+        setStatus({ type: 'error', msg: 'Please agree to the terms of service.' });
+        return;
+    }
+    
+    setLoading(true);
+    setStatus({ type: null, msg: '' }); // Reset status
+
+    // 1. Auth Sign Up
+    const { data, error: authError } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+    });
+
+    if (authError) {
+      setStatus({ type: 'error', msg: authError.message });
+      setLoading(false);
+      return;
+    }
+
+    // 2. Database Insert
+    const { error: dbError } = await supabase.from("users").insert([
+      {
+        auth_id: data.user?.id,
+        full_name: form.fullName,
+        email: form.email,
+        phone: form.phone,
+        matricule: form.studentId,
+        role: "student",
+      },
+    ]);
+
+    if (dbError) {
+      setStatus({ type: 'error', msg: "Database sync failed: " + dbError.message });
+      setLoading(false);
+    } else {
+      setStatus({ type: 'success', msg: 'Registration Successful! Redirecting...' });
+      setLoading(false);
+      
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg-soft)' }}>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative">
+      
+      {/* Dynamic Pop-up Notification */}
+      {status.type && (
+        <div className={`fixed top-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border transition-all animate-in fade-in slide-in-from-top-4 duration-300 ${
+          status.type === 'success' 
+            ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+            : 'bg-rose-50 border-rose-200 text-rose-800'
+        }`}>
+          {status.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
+          <span className="font-bold text-sm tracking-tight">{status.msg}</span>
+        </div>
+      )}
 
-      {/* ── Navbar (reusing same minimal header style as Login) ── */}
-      <header
-        className="fixed top-0 w-full z-50 h-16 flex items-center px-8 shadow-sm"
-        style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(16px)' }}
-      >
-        <div className="max-w-7xl mx-auto w-full flex justify-between items-center">
-          {/* Logo */}
-          <Link
-            to="/"
-            className="text-xl font-bold"
-            style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-          >
-            Academic Velocity
-          </Link>
-
-          {/* Desktop nav links */}
-          <div className="hidden md:flex gap-8 items-center text-sm font-semibold">
-            {['Features', 'How It Works', 'Routes'].map(label => (
-              <a
-                key={label}
-                href="#"
-                className="transition-colors duration-150"
-                style={{ color: 'var(--color-text-muted)' }}
-                onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
-                onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
-              >
-                {label}
-              </a>
-            ))}
-          </div>
-
-          {/* Auth buttons */}
-          <div className="flex items-center gap-3 text-sm font-semibold">
-            <Link
-              to="/login"
-              className="transition-colors duration-150"
-              style={{ color: 'var(--color-text-muted)' }}
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="px-5 py-2 rounded-lg text-white transition-colors duration-150"
-              style={{ background: 'var(--color-primary)' }}
-            >
-              Sign Up
-            </Link>
+      <div className="w-full max-w-4xl grid md:grid-cols-2 bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100">
+        
+        {/* Left Side: Branding */}
+        <div className="p-8 md:p-10 bg-gradient-to-b from-lime-500 to-lime-600 flex flex-col relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
+          <h2 className="text-4xl font-black text-slate-900 mb-4 leading-tight tracking-tighter">Ride with <br/> Velocity.</h2>
+          <p className="text-slate-800 font-bold text-base mb-8 max-w-[240px]">The smarter way to move across campus.</p>
+          
+          <div className="space-y-4 mt-auto">
+            <div className="bg-white/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20">
+              <div className="flex items-center gap-2 mb-1 font-black text-slate-900 text-sm italic">
+                <Zap size={16} /> Priority Transit
+              </div>
+              <p className="text-xs text-slate-800 font-medium leading-relaxed">Instant access to live tracking and reservations.</p>
+            </div>
+            
+            <div className="bg-slate-900 text-white p-4 rounded-[1.5rem] shadow-lg">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[9px] font-black uppercase tracking-widest text-lime-400">Network Status</p>
+                <div className="w-1.5 h-1.5 bg-lime-400 rounded-full animate-pulse" />
+              </div>
+              <h4 className="font-bold text-base italic tracking-tight">Active Campus</h4>
+            </div>
           </div>
         </div>
-      </header>
 
-      {/* ── Main content ── */}
-      <main className="flex-1 pt-16 relative overflow-hidden">
-
-        {/* Soft background decorations */}
-        <div
-          className="absolute top-0 right-0 w-1/3 h-full -z-10 opacity-40"
-          style={{ background: 'var(--color-secondary-light)', clipPath: 'polygon(0 0, 100% 0, 100% 90%, 0% 100%)' }}
-        />
-        <div
-          className="absolute bottom-0 left-0 w-64 h-64 rounded-full -z-10"
-          style={{ background: 'var(--color-primary-light)', opacity: 0.15, filter: 'blur(60px)' }}
-        />
-
-        <div className="max-w-6xl mx-auto px-6 py-16 grid lg:grid-cols-2 gap-16 items-center">
-
-          {/* ── Left: editorial content ── */}
-          <div className="space-y-8">
-            {/* Badge + heading */}
-            <div>
-              <span
-                className="inline-block px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase mb-4"
-                style={{ background: 'var(--color-secondary-light)', color: 'var(--color-primary-dark)' }}
-              >
-                New Registration
-              </span>
-              <h1
-                className="text-4xl md:text-5xl font-bold leading-tight mb-4"
-                style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-              >
-                Join the smart campus transit network.
-              </h1>
-              <p className="text-lg leading-relaxed max-w-md" style={{ color: 'var(--color-text-muted)' }}>
-                Secure your seat, track shuttles in real-time, and breeze through your
-                daily commute with the Academic Velocity student pass.
-              </p>
-            </div>
-
-            {/* Feature highlights */}
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                {
-                  icon:  '⚡',
-                  title: 'Priority Access',
-                  desc:  'Book up to 48 hours in advance for all campus routes.',
-                },
-                {
-                  icon:  '📍',
-                  title: 'Live Tracking',
-                  desc:  'Precise arrival times at every designated stop.',
-                },
-              ].map(({ icon, title, desc }) => (
-                <div
-                  key={title}
-                  className="p-5 rounded-xl"
-                  style={{ background: 'var(--color-white)', border: '1px solid var(--color-border)' }}
-                >
-                  <span className="text-3xl mb-3 block">{icon}</span>
-                  <h3
-                    className="font-bold mb-1"
-                    style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-                  >
-                    {title}
-                  </h3>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
-                    {desc}
-                  </p>
-                </div>
-              ))}
-            </div>
+        {/* Right Side: Form */}
+        <div className="p-8 md:p-10 lg:p-12 flex flex-col justify-center">
+          <div className="mb-6 text-center md:text-left">
+            <h3 className="text-2xl font-black text-slate-900 tracking-tight underline decoration-lime-500 decoration-4 underline-offset-4">Create Account</h3>
+            <p className="text-slate-400 font-bold text-[11px] mt-2 uppercase tracking-widest">Student Verification</p>
           </div>
 
-          {/* ── Right: registration form card ── */}
-          <div
-            className="p-8 md:p-10 rounded-2xl shadow-lg border"
-            style={{ background: 'var(--color-white)', borderColor: 'var(--color-border)' }}
-          >
-            {/* Card heading */}
-            <div className="mb-8 text-center">
-              <h2
-                className="text-2xl font-bold mb-1"
-                style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}
-              >
-                Student Registration
-              </h2>
-              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                Enter your university credentials to begin.
-              </p>
+          <form className="space-y-4" onSubmit={handleSignup}>
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Legal Name</label>
+              <input 
+                required
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
+                placeholder="Sarah Jenkins" 
+              />
             </div>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-
-              {/* Full Name */}
-              <div>
-                <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                  Full Name
-                </label>
-                <input
-                  name="fullName"
-                  type="text"
-                  placeholder="Johnathan Doe"
-                  value={form.fullName}
-                  onChange={handleChange}
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Student ID</label>
+                <input 
                   required
-                  className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                  style={{ background: 'var(--color-bg-soft)', border: '1.5px solid var(--color-border)', color: 'var(--color-text)' }}
-                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                  onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
+                  value={form.studentId}
+                  onChange={(e) => setForm({ ...form, studentId: e.target.value })}
+                  className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
+                  placeholder="ID-2026" 
                 />
               </div>
-
-              {/* Email + Student ID (side by side on md+) */}
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                    University Email
-                  </label>
-                  <input
-                    name="email"
-                    type="email"
-                    placeholder="j.doe@uni.edu"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                    style={{ background: 'var(--color-bg-soft)', border: '1.5px solid var(--color-border)', color: 'var(--color-text)' }}
-                    onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                    onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                    Student ID
-                  </label>
-                  <input
-                    name="studentId"
-                    type="text"
-                    placeholder="ID-882910"
-                    value={form.studentId}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                    style={{ background: 'var(--color-bg-soft)', border: '1.5px solid var(--color-border)', color: 'var(--color-text)' }}
-                    onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                    onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
-                  />
-                </div>
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                  Phone Number
-                </label>
-                <input
-                  name="phone"
-                  type="tel"
-                  placeholder="+237 6XX XXX XXX"
+              <div className="space-y-1">
+                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone</label>
+                <input 
+                  required
                   value={form.phone}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                  style={{ background: 'var(--color-bg-soft)', border: '1.5px solid var(--color-border)', color: 'var(--color-text)' }}
-                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                  onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
+                  placeholder="6xx xxx xxx" 
                 />
               </div>
-
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-semibold mb-1.5" style={{ color: 'var(--color-text-muted)' }}>
-                  Password
-                </label>
-                <input
-                  name="password"
-                  type="password"
-                  placeholder="Min. 8 characters"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  minLength={8}
-                  className="w-full px-4 py-3 rounded-lg text-sm outline-none transition-all duration-150"
-                  style={{ background: 'var(--color-bg-soft)', border: '1.5px solid var(--color-border)', color: 'var(--color-text)' }}
-                  onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
-                  onBlur={e  => (e.currentTarget.style.borderColor = 'var(--color-border)')}
-                />
-              </div>
-
-              {/* Terms checkbox */}
-              <div className="flex items-start gap-3 py-1">
-                <input
-                  id="agreed"
-                  name="agreed"
-                  type="checkbox"
-                  checked={form.agreed}
-                  onChange={handleChange}
-                  required
-                  className="mt-0.5 w-4 h-4 rounded"
-                  style={{ accentColor: 'var(--color-primary)' }}
-                />
-                <label htmlFor="agreed" className="text-sm leading-snug" style={{ color: 'var(--color-text-muted)' }}>
-                  I agree to the{' '}
-                  <a href="#" className="font-semibold underline" style={{ color: 'var(--color-primary)' }}>
-                    Terms of Service
-                  </a>{' '}
-                  and the campus code of conduct regarding shuttle usage.
-                </label>
-              </div>
-
-              {/* Submit */}
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-xl font-bold text-base text-white shadow-md transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0"
-                style={{ background: 'linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)' }}
-              >
-                Create Account
-              </button>
-
-              {/* Sign in link */}
-              <p className="text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                Already have an account?{' '}
-                <Link
-                  to="/login"
-                  className="font-semibold"
-                  style={{ color: 'var(--color-primary)' }}
-                >
-                  Sign In
-                </Link>
-              </p>
-
-            </form>
-          </div>
-
-        </div>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer
-        className="border-t"
-        style={{ background: 'var(--color-white)', borderColor: 'var(--color-border)' }}
-      >
-        <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-4 gap-10">
-
-          {/* Brand */}
-          <div>
-            <p className="text-base font-bold mb-3" style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}>
-              Academic Velocity
-            </p>
-            <p className="text-sm leading-relaxed max-w-xs" style={{ color: 'var(--color-text-muted)' }}>
-              Connecting campus life through efficient, smart, and sustainable
-              transportation solutions.
-            </p>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--color-primary-dark)' }}>
-              Quick Links
-            </h4>
-            <ul className="space-y-2">
-              {['Routes & Schedules', 'Safety Protocols', 'Mobile App'].map(label => (
-                <li key={label}>
-                  <a
-                    href="#"
-                    className="text-sm transition-colors duration-150"
-                    style={{ color: 'var(--color-text-muted)' }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
-                  >
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--color-primary-dark)' }}>
-              Contact Info
-            </h4>
-            <ul className="space-y-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              <li>✉ support@academicvelocity.edu</li>
-              <li>📞 (555) TRANSIT-99</li>
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: 'var(--color-primary-dark)' }}>
-              Follow Us
-            </h4>
-            <div className="flex gap-3">
-              {['🌐', '🐦'].map((icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all duration-150"
-                  style={{ background: 'var(--color-bg-muted)', color: 'var(--color-primary-dark)' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary)', e.currentTarget.style.color = 'white')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-bg-muted)', e.currentTarget.style.color = 'var(--color-primary-dark)')}
-                >
-                  {icon}
-                </a>
-              ))}
             </div>
-          </div>
 
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
+              <input 
+                required
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
+                placeholder="s.jenkins@uni.edu" 
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
+              <div className="relative">
+                <input 
+                  required
+                  type={showPassword ? "text" : "password"} 
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all pr-12 text-sm font-medium" 
+                  placeholder="••••••••" 
+                />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-lime-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 py-1">
+              <input 
+                type="checkbox" 
+                id="agreed"
+                checked={form.agreed}
+                onChange={(e) => setForm({...form, agreed: e.target.checked})}
+                className="accent-lime-600 h-4 w-4 rounded cursor-pointer"
+              />
+              <label htmlFor="agreed" className="text-[10px] text-slate-500 font-bold uppercase tracking-tight cursor-pointer">
+                I agree to terms of service.
+              </label>
+            </div>
+
+            <button 
+              disabled={loading}
+              className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-base hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group mt-2 disabled:opacity-50"
+            >
+              {loading ? "Registering..." : "Create Account"} 
+              {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
+            </button>
+          </form>
+          
+          <p className="mt-6 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">
+            Member? <Link to="/login" className="text-slate-900 border-b-2 border-lime-500 ml-1">Log In</Link>
+          </p>
         </div>
-
-        {/* Bottom bar */}
-        <div
-          className="px-6 py-4 border-t text-center text-xs"
-          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-muted)', opacity: 0.7 }}
-        >
-          © {new Date().getFullYear()} Academic Velocity. All rights reserved.
-        </div>
-      </footer>
-
+      </div>
     </div>
   );
 }

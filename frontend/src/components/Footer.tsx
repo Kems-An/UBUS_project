@@ -1,77 +1,68 @@
-import { Link } from 'react-router-dom';
-
-/* Footer is shared across all pages via the Layout component */
 export default function Footer() {
   return (
-    <footer className="border-t" style={{ background: 'var(--color-white)', borderColor: 'var(--color-border)' }}>
-      <div className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
-
-        {/* Brand */}
-        <div className="md:col-span-1">
-          <p className="text-lg font-bold mb-4" style={{ color: 'var(--color-primary-dark)', fontFamily: 'Manrope, sans-serif' }}>
-            Academic Velocity
-          </p>
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--color-text-muted)' }}>
-            Elevating the campus experience through intelligent transit solutions. Modern, efficient, and student-focused mobility.
-          </p>
-        </div>
-
-        {/* Quick Links */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--color-primary-dark)' }}>
-            Quick Links
-          </h4>
-          <ul className="flex flex-col gap-3">
-            {['Find a Route', 'Book a Seat', 'Real-time Map', 'Accessibility'].map(label => (
-              <li key={label}>
-                <a href="#" className="text-sm transition-colors duration-150" style={{ color: 'var(--color-text-muted)' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-primary)')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Contact */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--color-primary-dark)' }}>
-            Contact Info
-          </h4>
-          <ul className="flex flex-col gap-3 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            <li>✉ transit@university.edu</li>
-            <li>📞 (555) 123-4567</li>
-            <li>📍 Campus Center, Suite 402</li>
-          </ul>
-        </div>
-
-        {/* Social */}
-        <div>
-          <h4 className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: 'var(--color-primary-dark)' }}>
-            Social Media
-          </h4>
-          <div className="flex gap-3 mb-6">
-            {['🌐', '🐦', '📘'].map((icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors duration-150"
-                style={{ background: 'var(--color-bg-muted)', color: 'var(--color-primary-dark)' }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-secondary-light)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-bg-muted)')}
-              >
-                {icon}
-              </a>
-            ))}
+    <footer className="pt-24 pb-12" style={{ background: 'var(--color-neutral-900)' }}>
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-20">
+          
+          {/* Brand & Mission */}
+          <div className="md:col-span-5">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="w-8 h-8 rounded-full" style={{ background: 'var(--color-primary)' }} />
+              <span className="text-2xl font-bold text-white tracking-tighter">Academic Velocity</span>
+            </div>
+            <p className="text-slate-400 text-lg max-w-sm leading-relaxed">
+              We’re redefining campus mobility with tech that puts students first. Real-time, reliable, and remarkably simple.
+            </p>
           </div>
 
-          {/* Copyright */}
-          <p className="text-xs" style={{ color: 'var(--color-text-muted)', opacity: 0.7 }}>
-            © {new Date().getFullYear()} Academic Velocity. All rights reserved.
-          </p>
+          {/* Quick Nav */}
+          <div className="md:col-span-2">
+            <h4 className="text-white font-bold mb-6">Explore</h4>
+            <ul className="space-y-4 text-slate-400 text-sm">
+              <li><a href="#" className="hover:text-white transition-colors">Live Map</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Schedules</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Safety</a></li>
+            </ul>
+          </div>
+
+          {/* Support */}
+          <div className="md:col-span-2">
+            <h4 className="text-white font-bold mb-6">Support</h4>
+            <ul className="space-y-4 text-slate-400 text-sm">
+              <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Feedback</a></li>
+            </ul>
+          </div>
+
+          {/* Social Icons */}
+          <div className="md:col-span-3">
+            <h4 className="text-white font-bold mb-6">Join the Community</h4>
+            <div className="flex gap-4">
+              {['𝕏', '📸', '🎧'].map((icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="w-12 h-12 rounded-full border border-slate-700 flex items-center justify-center text-xl hover:bg-slate-800 hover:border-slate-500 transition-all"
+                >
+                  {icon}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
 
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-slate-500 text-xs">
+            © {new Date().getFullYear()} Academic Velocity. Built for the next generation of students.
+          </p>
+          <div className="flex gap-8 text-xs text-slate-500">
+            <a href="#" className="hover:text-slate-300">Privacy Policy</a>
+            <a href="#" className="hover:text-slate-300">Terms of Service</a>
+          </div>
+        </div>
       </div>
     </footer>
   );
