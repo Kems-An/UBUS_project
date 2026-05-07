@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* =============================================
+   GLOBAL COLOR PALETTE (Light Mode / Modern)
+   ============================================= */
+
+:root {
+  /* Brand Accents (Vibrant Lime) */
+  --color-primary:       #84CC16;  /* Main Lime Green */
+  --color-primary-light: #ECFCCB;  /* Very light lime for hover/badges */
+  --color-primary-dark:  #4D7C0F;  /* Deep lime for emphasis */
+
+  /* Neutral Grays (The "Slate" foundation) */
+  --color-neutral-900:   #0F172A;  /* Deep slate for headings */
+  --color-neutral-600:   #475569;  /* Medium slate for body text */
+  --color-neutral-400:   #94A3B8;  /* Muted slate for secondary text */
+
+  /* Backgrounds */
+  --color-bg:            #FFFFFF;  /* Pure white */
+  --color-bg-soft:       #F8FAFC;  /* Ultra light gray/blue tint for sections */
+  --color-bg-muted:      #F1F5F9;  /* Slightly deeper soft gray */
+
+  /* Surface / Card Elements */
+  --color-surface:       #FFFFFF;
+  --color-border:        #E2E8F0;  /* Subtle border color */
+
+  /* Feedback Colors (Standard) */
+  --color-success:       #22C55E;
+  --color-error:         #EF4444;
+}
+
+/* Base body styles */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-neutral-600); /* Use neutral-600 for better readability */
+  font-family: "Montserrat", sans-serif;
+  -webkit-font-smoothing: antialiased; /* Makes fonts look crisper in light mode */
+}
+
+/* Headings utility (since body is now 600) */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-neutral-900);
+  font-weight: 700;
+  letter-spacing: -0.025em; /* Modern tight tracking */
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection highlight - using the lime accent */
+::selection {
+  background-color: var(--color-primary-light);
+  color: var(--color-neutral-900);
+}
+
+/* Shared Transition Utility */
+.transition-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
