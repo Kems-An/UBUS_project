@@ -11,7 +11,7 @@ const navItems = [
   { label: 'Fleet Status', icon: <Bus size={20} />, to: '/admin/fleet' },
   { label: 'Routes', icon: <Map size={20} />, to: '/admin/routes' },
   { label: 'Bookings', icon: <CalendarCheck size={20} />, to: '/admin/bookings' },
-  { label: 'Financials', icon: <CircleDollarSign size={20} />, to: '/admin/financials' },
+  { label: 'Financials', icon: <CircleDollarSign size={20} />, to: '/admin/financials' }, 
 ];
 
 const AdminLayout: React.FC = () => {

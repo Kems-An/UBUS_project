@@ -5,7 +5,7 @@ import {
   Bus, 
   CalendarCheck, 
   Wallet, 
-  ArrowUpRight, 
+  ArrowUpRight,  
   Clock, 
   AlertCircle, 
   MoreHorizontal,

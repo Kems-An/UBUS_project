@@ -20,7 +20,7 @@ const NAV_ITEMS = [
 ];
 
 export default function DriverLayout() {
-  const { driver, logout } = useAuth(); // Assuming 'driver' object in context
+  const { user, logout } = useAuth(); // Assuming 'driver' object in context 
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -69,10 +69,10 @@ export default function DriverLayout() {
             <div className="bg-slate-50 rounded-[2rem] p-5 border border-slate-100 shadow-inner">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 rounded-full bg-[#00623f] flex items-center justify-center text-white font-bold ring-4 ring-white">
-                   {driver?.name?.charAt(0) || 'M'}
+                   {user?.full_name?.charAt(0) || 'M'}
                 </div>
                 <div className="overflow-hidden">
-                  <p className="text-xs font-bold text-slate-900 truncate">{driver?.name || 'Marcus Chen'}</p>
+                  <p className="text-xs font-bold text-slate-900 truncate">{user?.full_name || 'Marcus Chen'}</p>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-1">
                     <ShieldCheck size={10} className="text-emerald-500" /> ID: #AV-902
                   </p>

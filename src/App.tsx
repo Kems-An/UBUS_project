@@ -4,6 +4,8 @@ import IntroLoader from './components/IntroLoader';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 
+import '@maptiler/sdk/dist/maptiler-sdk.css';
+
 // Public pages
 import LandingPage from './pages/LandingPage';
 
@@ -17,13 +19,11 @@ import StudentLayout from './components/StudentLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import StudentDashboard from './pages/dashboard/student/StudentDashboard';
 import RoutesSchedulePage from './pages/dashboard/student/RouteSchedulePage';
-import SeatSelectionPage from './pages/dashboard/student/SeatSelectionPage';
-import PaymentPage from './pages/dashboard/student/PaymentPage';
-import BookingConfirmationPage from './pages/dashboard/student/BookingConfirmationPage';
-import NotificationsPage from './pages/dashboard/student/NotificationsPage';
-import SupportPage from './pages/dashboard/student/SupportPage';
+import SeatSelectionPage from './pages/dashboard/student/StudentShuttleBooking/SeatSelectionPage';
+import PaymentPage from './pages/dashboard/student/StudentShuttleBooking/PaymentPage';
+import BookingConfirmationPage from './pages/dashboard/student/StudentShuttleBooking/BookingConfirmationPage';
 import StudentProfilePage from './pages/dashboard/student/StudentProfilePage';
-import StudentBookingsPage from './pages/dashboard/student/StudentBookingPage';
+import StudentBookingsPage from './pages/dashboard/student/StudentResumePage';
 
 import { supabase } from "./lib/superbaseClient";
 import DriverLayout from './components/Driverlayout';
@@ -36,6 +36,8 @@ import AdminLayout from './components/Adminlayout';
 import Studentsmanagement from './pages/dashboard/admin/StudentManagement';
 import HowItWorks from './pages/Howitworks';
 import AboutUs from './pages/AboutUs';
+import RouteSelectionPage from './pages/dashboard/student/StudentShuttleBooking/RouteSelectionPage';
+import ShuttleSelectionPage from './pages/dashboard/student/StudentShuttleBooking/ShuttleSelectionPage';
 
 export default function App() {
   // Initialize state based on session storage to prevent the "flicker"
@@ -86,10 +88,11 @@ export default function App() {
               <Route index                       element={<StudentDashboard />} />
               <Route path="routes"               element={<RoutesSchedulePage />} />
               <Route path="seat-selection"       element={<SeatSelectionPage />} />
+              <Route path="route-selection"       element={<RouteSelectionPage />} />
+              <Route path="shuttle-selection"       element={<ShuttleSelectionPage />} />
               <Route path="payment"              element={<PaymentPage />} />
               <Route path="booking-confirmation" element={<BookingConfirmationPage />} />
-              <Route path="notifications"        element={<NotificationsPage />} />
-              <Route path="support"              element={<SupportPage />} />
+      
               <Route path="profile"              element={<StudentProfilePage />} />
               <Route path="Bookings"              element={<StudentBookingsPage />} />
             </Route>
