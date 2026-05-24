@@ -2,14 +2,11 @@ import { useAuth } from '../../../context/AuthContext';
 import { 
   Navigation, 
   CheckCircle2, 
-  Calendar, 
   Search, 
   Map as MapIcon, 
   Clock, 
   Bus, 
   MapPin,
-  ChevronRight,
-  Info,
   ExternalLink
 } from 'lucide-react';
 
@@ -43,123 +40,142 @@ const ROUTES = [
 ];
 
 export default function DriverSchedule() {
-  const { driver } = useAuth();
+  const { user } = useAuth();
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Top Header */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-10">
+      
+      {/* ─── TOP HEADER ─── */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Daily Schedule</h2>
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mt-1">Monday, Oct 21, 2024</p>
+          <h2 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight sm:text-4xl">
+            Daily Schedule
+          </h2>
+          <p className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-1.5">
+            Operational Log: Shift Circuit Updates
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-white border border-slate-100 rounded-2xl flex items-center gap-3 shadow-sm">
-            <div className="w-2 h-2 rounded-full bg-[#4f6600] animate-pulse" />
-            <span className="text-xs font-black text-[#4f6600] uppercase tracking-tighter">On-duty</span>
+          <div className="px-4 py-2 bg-white border border-[var(--color-border)] rounded-xl flex items-center gap-2.5 shadow-xs">
+            <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" />
+            <span className="text-[10px] font-black text-[var(--color-primary-dark)] uppercase tracking-wider">
+              On-Duty Network
+            </span>
           </div>
-          <button className="p-3 bg-white border border-slate-100 rounded-2xl text-slate-400 hover:text-slate-600 transition-colors">
-            <Search size={20} />
+          <button className="p-2.5 bg-white border border-[var(--color-border)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)] transition-colors shadow-xs">
+            <Search size={16} />
           </button>
         </div>
       </header>
 
-      {/* Hero Assignment Section */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-        <div className="lg:col-span-2 bg-[#00623f] text-white rounded-[2.5rem] p-10 relative overflow-hidden flex flex-col justify-between min-h-[250px] shadow-xl shadow-emerald-900/10">
+      {/* ─── HERO ASSIGNMENT SECTION ─── */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Main Route Tracking Block: Deep Emerald Theme Background */}
+        <div className="lg:col-span-8 bg-[var(--color-primary)] text-white rounded-2xl p-8 relative overflow-hidden flex flex-col justify-between min-h-[260px] shadow-sm">
           <div className="relative z-10">
-            <span className="text-[10px] font-black tracking-[0.2em] bg-white/20 px-4 py-1.5 rounded-full uppercase">
-              Current Assignment
+            <span className="text-[9px] font-black tracking-widest bg-white/15 px-3 py-1 rounded-full uppercase border border-white/10">
+              Active Transponder Route
             </span>
-            <h3 className="text-4xl font-black mt-6 tracking-tight">North-South Connector</h3>
-            <p className="mt-3 text-emerald-100 flex items-center gap-2 font-bold text-sm">
-              <Bus size={18} /> Shuttle ID: {driver?.fleetId || 'SH-102'}
+            <h3 className="text-3xl font-black mt-5 tracking-tight">North-South Connector</h3>
+            <p className="mt-2.5 text-white/85 flex items-center gap-2 font-semibold text-xs">
+              <Bus size={14} /> Assigned License Key: <span className="font-mono">{user?.license_number || 'UNSET-CNF'}</span>
             </p>
           </div>
           
-          <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6 mt-8">
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6 mt-6 pt-6 border-t border-white/10">
             <div>
-              <p className="text-xs font-bold text-emerald-200/60 uppercase tracking-widest mb-1">Next Stop</p>
-              <p className="text-xl font-black">Engineering Quad (Gate B)</p>
+              <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest mb-0.5">Next Operational Stop Node</p>
+              <p className="text-lg font-black tracking-tight">Engineering Quad (Gate B)</p>
             </div>
-            <button className="bg-white text-[#00623f] font-black px-8 py-4 rounded-2xl shadow-lg hover:scale-105 transition-all text-sm flex items-center gap-2">
-              <MapIcon size={18} /> View Live Map
+            <button className="bg-white text-[var(--color-primary-dark)] font-black px-6 py-3.5 rounded-xl shadow-xs hover:bg-[var(--color-bg-soft)] transition-all text-xs flex items-center justify-center gap-2 shrink-0">
+              <MapIcon size={14} /> Telemetry Map
             </button>
           </div>
-          <div className="absolute -right-16 -bottom-16 w-80 h-80 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute -right-16 -bottom-16 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
         </div>
 
-        <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 flex flex-col justify-between shadow-sm">
+        {/* Progress Metrics Panel: Custom Accent Variable Integration */}
+        <div className="lg:col-span-4 bg-white border border-[var(--color-border)] rounded-2xl p-6 flex flex-col justify-between shadow-xs">
           <div>
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6">Today's Progress</h4>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-4xl font-black text-slate-900">3 / 5</span>
-              <span className="text-xs font-black text-[#4f6600] bg-[#cfef7a]/30 px-3 py-1 rounded-full">60% DONE</span>
+            <h4 className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-4">
+              Shift Operations Progress
+            </h4>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tighter">3 / 5</span>
+              <span className="text-[10px] font-black text-[var(--color-primary-dark)] bg-[var(--color-secondary-light)] px-2.5 py-1 rounded-full tracking-wide">
+                60% CYCLE COMPLETE
+              </span>
             </div>
-            <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-              <div className="bg-[#00623f] h-full rounded-full transition-all duration-1000" style={{ width: '60%' }} />
+            <div className="w-full bg-[var(--color-bg-soft)] h-2.5 rounded-full overflow-hidden border border-[var(--color-border)]/40">
+              <div className="bg-[var(--color-primary)] h-full rounded-full transition-all duration-1000" style={{ width: '60%' }} />
             </div>
           </div>
-          <div className="mt-8 flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-            <div className="p-3 bg-white text-[#4f6600] rounded-xl shadow-sm">
-              <Clock size={20} />
+          
+          <div className="mt-6 flex items-center gap-3.5 bg-[var(--color-bg-soft)] p-3.5 rounded-xl border border-[var(--color-border)]">
+            <div className="p-2 bg-white text-[var(--color-primary)] rounded-lg border border-[var(--color-border)] shadow-2xs">
+              <Clock size={16} />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Remaining Time</p>
-              <p className="text-lg font-black text-slate-900">04h 22m</p>
+              <p className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Remaining Run Duration</p>
+              <p className="text-base font-black text-[var(--color-primary-dark)] tracking-tight">04h 22m</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Route Schedule List */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-xl font-black text-slate-900">Route Schedule</h3>
-          <div className="flex p-1 bg-slate-100 rounded-xl">
-            <button className="px-5 py-2 text-xs font-black rounded-lg bg-white shadow-sm text-slate-900">All Routes</button>
-            <button className="px-5 py-2 text-xs font-black rounded-lg text-slate-500 hover:text-slate-700 transition-colors">Upcoming</button>
+      {/* ─── ROUTE SCHEDULE LIST ─── */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-black text-[var(--color-primary-dark)] tracking-tight">
+            Assigned Loops
+          </h3>
+          <div className="flex p-1 bg-[var(--color-bg-soft)] border border-[var(--color-border)] rounded-xl">
+            <button className="px-4 py-1.5 text-[10px] font-black rounded-lg bg-white shadow-xs text-[var(--color-primary-dark)]">All Loops</button>
+            <button className="px-4 py-1.5 text-[10px] font-bold rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)] transition-colors">Pending</button>
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {ROUTES.map((route) => (
             <div 
               key={route.id} 
-              className={`group bg-white p-6 rounded-[2rem] border transition-all duration-300 flex flex-col md:flex-row md:items-center gap-6 
-                ${route.isActive ? 'border-emerald-200 shadow-xl shadow-emerald-900/5 ring-1 ring-emerald-100' : 'border-slate-100 hover:bg-slate-50'}`}
+              className={`group bg-white p-5 rounded-2xl border transition-all duration-200 flex flex-col md:flex-row md:items-center gap-5 
+                ${route.isActive ? 'border-[var(--color-primary)] shadow-xs ring-1 ring-[var(--color-primary)]/10' : 'border-[var(--color-border)] hover:bg-[var(--color-bg-soft)]'}`}
             >
               <div className="flex-shrink-0">
-                <div className={`w-16 h-16 rounded-[1.25rem] flex items-center justify-center transition-transform group-hover:scale-110 
-                  ${route.isCompleted ? 'bg-slate-100 text-slate-400' : route.isActive ? 'bg-emerald-50 text-[#00623f]' : 'bg-slate-50 text-slate-900'}`}>
-                  {route.isCompleted ? <CheckCircle2 size={32} /> : <Navigation size={32} />}
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-102
+                  ${route.isCompleted ? 'bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border border-[var(--color-border)]' : route.isActive ? 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)]' : 'bg-[var(--color-bg-soft)] text-[var(--color-primary-dark)] border border-[var(--color-border)]'}`}>
+                  {route.isCompleted ? <CheckCircle2 size={22} /> : <Navigation size={22} />}
                 </div>
               </div>
 
               <div className="flex-grow">
-                <div className="flex items-center gap-3 mb-2">
-                  <h4 className={`text-xl font-black tracking-tight ${route.isCompleted ? 'text-slate-400 line-through decoration-2' : 'text-slate-900'}`}>
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <h4 className={`text-base font-extrabold tracking-tight ${route.isCompleted ? 'text-[var(--color-text-muted)] line-through decoration-1' : 'text-[var(--color-primary-dark)]'}`}>
                     {route.title}
                   </h4>
-                  <span className={`text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-widest
-                    ${route.isCompleted ? 'bg-slate-100 text-slate-400' : route.isActive ? 'bg-[#cfef7a] text-[#4f6600]' : 'bg-[#9bf5c4] text-[#005234]'}`}>
+                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider
+                    ${route.isCompleted ? 'bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border border-[var(--color-border)]' : route.isActive ? 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)]' : 'bg-[var(--color-bg-soft)] text-[var(--color-primary-dark)] border border-[var(--color-border)]'}`}>
                     {route.status}
                   </span>
                 </div>
-                <div className="flex flex-wrap gap-5 text-xs font-bold text-slate-500">
-                  <span className="flex items-center gap-1.5"><Clock size={14} className={route.isActive ? 'text-[#00623f]' : ''} /> {route.time}</span>
-                  <span className="flex items-center gap-1.5"><MapPin size={14} className={route.isActive ? 'text-[#00623f]' : ''} /> {route.stops} Stops</span>
-                  <span className="flex items-center gap-1.5"><Bus size={14} className={route.isActive ? 'text-[#00623f]' : ''} /> {route.shuttle}</span>
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-semibold text-[var(--color-text-muted)]">
+                  <span className="flex items-center gap-1"><Clock size={12} className={route.isActive ? 'text-[var(--color-primary)]' : ''} /> {route.time}</span>
+                  <span className="flex items-center gap-1"><MapPin size={12} className={route.isActive ? 'text-[var(--color-primary)]' : ''} /> {route.stops} Terminals</span>
+                  <span className="flex items-center gap-1"><Bus size={12} className={route.isActive ? 'text-[var(--color-primary)]' : ''} /> Asset {route.shuttle}</span>
                 </div>
               </div>
 
-              <div className="md:ml-auto">
+              <div className="md:ml-auto shrink-0">
                 {route.isCompleted ? (
-                  <button className="px-6 py-3 rounded-2xl border border-slate-200 text-slate-400 font-black text-xs cursor-not-allowed">View Log</button>
+                  <button className="w-full md:w-auto px-4 py-2.5 rounded-xl border border-[var(--color-border)] text-[var(--color-text-muted)] font-bold text-xs bg-[var(--color-bg-soft)] cursor-not-allowed">
+                    Archived Log
+                  </button>
                 ) : (
-                  <button className={`px-6 py-3 rounded-2xl font-black text-xs shadow-md transition-all active:scale-95
-                    ${route.isActive ? 'bg-[#00623f] text-white shadow-emerald-900/20' : 'bg-slate-900 text-white'}`}>
-                    View Route Details
+                  <button className={`w-full md:w-auto px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-all active:scale-98
+                    ${route.isActive ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-primary-dark)] text-white'}`}>
+                    Open Manifest
                   </button>
                 )}
               </div>
@@ -168,39 +184,34 @@ export default function DriverSchedule() {
         </div>
       </section>
 
-      {/* Traffic Context Map Section */}
-      <section className="mt-12 rounded-[3rem] overflow-hidden relative h-[350px] border border-slate-100 shadow-inner group">
+      {/* ─── LIVE INFRASTRUCTURE CONTEXT ─── */}
+      <section className="rounded-2xl overflow-hidden relative h-[240px] border border-[var(--color-border)] shadow-2xs group">
         <img 
           src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=2066&auto=format&fit=crop" 
-          alt="University Map" 
-          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 grayscale opacity-40" 
+          alt="University Grid Layout Map" 
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-102 grayscale opacity-25" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-primary-dark)]/20 to-transparent" />
         
-        <div className="absolute bottom-8 left-8 right-8 p-6 bg-white/80 backdrop-blur-xl rounded-[2rem] flex items-center justify-between border border-white/50 shadow-2xl">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 bg-[#00623f] rounded-2xl flex items-center justify-center text-white shadow-lg">
-              <MapIcon size={24} />
+        <div className="absolute bottom-5 left-5 right-5 p-5 bg-white/90 backdrop-blur-md rounded-xl flex items-center justify-between border border-white/40 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 bg-[var(--color-primary)] rounded-lg flex items-center justify-center text-white shadow-2xs">
+              <MapIcon size={18} />
             </div>
             <div>
-              <h5 className="font-black text-slate-900 text-lg">Campus Traffic Status</h5>
-              <p className="text-sm text-[#4f6600] font-black uppercase tracking-tighter">Clear - All routes on time</p>
+              <h5 className="font-extrabold text-[var(--color-primary-dark)] text-base tracking-tight">Campus Traffic Status</h5>
+              <p className="text-xs text-[var(--color-primary)] font-bold uppercase tracking-wider">All Transit Vectors Clear</p>
             </div>
           </div>
           
-          <div className="hidden md:flex items-center gap-4">
-             <div className="flex -space-x-3">
-                {[1,2,3].map(i => (
-                  <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-200" />
-                ))}
-                <div className="w-10 h-10 rounded-full bg-slate-900 border-4 border-white flex items-center justify-center text-[10px] font-black text-white">+12</div>
-             </div>
-             <button className="p-3 bg-white rounded-xl shadow-sm border border-slate-100 text-slate-400 hover:text-slate-900 transition-colors">
-               <ExternalLink size={20} />
+          <div className="hidden md:flex items-center gap-3">
+             <button className="p-2.5 bg-white rounded-lg shadow-2xs border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)] transition-colors">
+               <ExternalLink size={16} />
              </button>
           </div>
         </div>
       </section>
+
     </div>
   );
 }

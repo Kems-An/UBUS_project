@@ -1,193 +1,239 @@
+import React from 'react';
 import { 
   BatteryFull, 
   Users, 
   ShieldCheck, 
   PlayCircle, 
   AlertTriangle, 
-  Map as MapIcon, 
-  ChevronRight, 
   Clock,
   Info,
-  Mail
+  Mail,
+  Zap,
+  Radio,
+  Milestone,
+  CheckCircle2,
+  CalendarDays,
+  Gauge,
+  Award
 } from 'lucide-react';
 
-export default function DriverDashboard() {
+interface DriverDashboardProps {
+  driverName?: string;
+}
+
+export default function DriverDashboard({ driverName = "Driver" }: DriverDashboardProps) {
   return (
-    <div className="animate-in fade-in duration-700">
-      {/* Header */}
-      <header className="mb-10 flex flex-col md:flex-row justify-between items-end gap-4">
-        <div>
-          <p className="text-[10px] font-black text-[#1b512d] uppercase tracking-[0.2em] mb-2">GOOD MORNING, MARCUS</p>
-          <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-none">Ready for Route 4A?</h2>
+    <div className="animate-in fade-in duration-700 space-y-8 pb-12 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 overflow-hidden">
+      
+      {/* ─── HEADER SECTION ─── */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 pb-6 border-b border-[var(--color-border)]">
+        <div className="space-y-1 min-w-0 flex-1">
+          <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.2em] break-words">
+            Driver Analytics Hub
+          </p>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[var(--color-primary-dark)] tracking-tight text-balance truncate">
+            {driverName}'s Performance Profile
+          </h2>
         </div>
-        <div className="flex gap-4">
-          <div className="px-5 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm">
-            <p className="text-[9px] text-slate-400 font-bold uppercase mb-1">Shift Starts</p>
-            <p className="text-sm font-black text-slate-900">08:45 AM</p>
+        
+        <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full md:w-auto shrink-0">
+          <div className="flex-1 sm:flex-none min-w-[140px] px-5 py-3 bg-white border border-[var(--color-border)] rounded-2xl shadow-2xs">
+            <p className="text-[9px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider mb-0.5 whitespace-nowrap">Active Assignment</p>
+            <p className="text-sm font-black text-[var(--color-primary-dark)] truncate">Toyota Coaster #88</p>
           </div>
-          <div className="px-5 py-3 bg-white border border-slate-100 rounded-2xl shadow-sm">
-            <p className="text-[9px] text-emerald-500 font-bold uppercase mb-1">Weather</p>
-            <p className="text-sm font-black text-slate-900">68°F Clear</p>
+          <div className="flex-1 sm:flex-none min-w-[140px] px-5 py-3 bg-white border border-[var(--color-border)] rounded-2xl shadow-2xs">
+            <p className="text-[9px] text-[var(--color-primary)] font-bold uppercase tracking-wider mb-0.5 whitespace-nowrap">Current Shift Status</p>
+            <p className="text-sm font-black text-[var(--color-primary-dark)] truncate">Standby (08:45 AM)</p>
           </div>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Assigned Shuttle Card */}
-        <div className="lg:col-span-8 bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm relative overflow-hidden flex flex-col md:flex-row items-center gap-8 group">
-          <div className="relative z-10 flex-1">
-            <span className="px-3 py-1 bg-[#cfef7a] text-[#546d00] text-[10px] font-black rounded-full mb-4 inline-block uppercase tracking-wider">
-              Assigned Fleet
-            </span>
-            <h3 className="text-3xl font-black text-slate-900 mb-2">Emerald Express #88</h3>
-            <p className="text-slate-500 text-sm mb-8 max-w-xs font-medium leading-relaxed">
-              2023 Electric Volvo G-Series. Inspected & charged to 94%.
-            </p>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <BatteryFull size={20} className="text-[#00623f] mb-2" />
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Range</p>
-                <p className="text-lg font-black text-slate-900">142 mi</p>
+      {/* ─── CORE STATISTICS GRID (RESPONSIVE WRAPPING) ─── */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { title: "Safe Driving Score", value: "98/100", desc: "Top 5% of campus network", icon: <ShieldCheck size={22} />, trend: "+1.2% wk" },
+          { title: "Total Passengers Hauled", value: "14,240", desc: "Across all active terms", icon: <Users size={22} />, trend: "840 rot" },
+          { title: "Distance Covered", value: "3,150 km", desc: "Total log history tracking", icon: <Milestone size={22} />, trend: "94 km today" },
+          { title: "On-Time Arrival Rate", value: "96.4%", desc: "Evaluated over past 90 loops", icon: <Clock size={22} />, trend: "Optimal" }
+        ].map((stat, idx) => (
+          <div key={idx} className="bg-white border border-[var(--color-border)] p-6 rounded-[2rem] shadow-2xs flex flex-col justify-between hover:border-[var(--color-primary)]/40 transition-colors group min-w-0">
+            <div className="flex justify-between items-start gap-2 mb-4">
+              <div className="p-3 bg-[var(--color-bg-soft)] text-[var(--color-primary-dark)] rounded-xl group-hover:bg-[var(--color-secondary-light)] transition-colors shrink-0">
+                {stat.icon}
               </div>
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <Users size={20} className="text-[#00623f] mb-2" />
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Capacity</p>
-                <p className="text-lg font-black text-slate-900">42 Seats</p>
-              </div>
-              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <ShieldCheck size={20} className="text-[#00623f] mb-2" />
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Safety</p>
-                <p className="text-lg font-black text-slate-900">Clear</p>
-              </div>
+              <span className="text-[9px] font-black text-[var(--color-primary)] bg-[var(--color-secondary-light)] px-2 py-0.5 rounded-md uppercase tracking-wide whitespace-nowrap truncate max-w-[100px]">
+                {stat.trend}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider mb-1 truncate">{stat.title}</p>
+              <h3 className="text-xl sm:text-2xl font-black text-[var(--color-primary-dark)] tracking-tight mb-1 truncate">{stat.value}</h3>
+              <p className="text-xs font-medium text-[var(--color-text-muted)] line-clamp-2 md:line-clamp-none leading-normal text-balance">{stat.desc}</p>
             </div>
           </div>
-          <div className="flex-1 relative h-64 w-full">
-            <img 
-              src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2070&auto=format&fit=crop" 
-              alt="Electric Shuttle"
-              className="w-full h-full object-cover rounded-3xl group-hover:scale-105 transition-transform duration-500"
-            />
-          </div>
-        </div>
+        ))}
+      </section>
 
-        {/* Quick Operations */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-[#00623f] p-8 rounded-[2.5rem] text-white shadow-xl shadow-[#00623f]/20 relative overflow-hidden group">
-            <h4 className="font-black text-xl mb-6">Shift Operations</h4>
-            <div className="flex flex-col gap-3">
-              <button className="w-full py-4 bg-white text-[#00623f] rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform">
-                <PlayCircle size={20} /> Start Active Shift
-              </button>
-              <button className="w-full py-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-white/20">
-                <AlertTriangle size={20} /> Report Issue
-              </button>
+      {/* ─── DETAILED WORKSPACE SPLIT ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* LEFT COMPONENT: FLEET EFFICIENCY & ROSTERS (8 COLS) */}
+        <div className="lg:col-span-8 space-y-6 min-w-0">
+          
+          {/* ASSIGNED SHUTTLE EFFICIENCY SUMMARY */}
+          <div className="bg-white border border-[var(--color-border)] rounded-[2.5rem] p-6 sm:p-8 shadow-2xs relative overflow-hidden flex flex-col md:flex-row items-center gap-6 md:gap-8 group min-w-0">
+            <div className="relative z-10 flex-1 w-full min-w-0">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)] text-[10px] font-black rounded-full mb-4 uppercase tracking-wider border border-[var(--color-border)]">
+                <Zap size={12} strokeWidth={2.5} /> Daily Asset Performance
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-black text-[var(--color-primary-dark)] tracking-tight mb-2 truncate">
+                Active Vehicle Metrics
+              </h3>
+              <p className="text-[var(--color-text-muted)] text-sm mb-6 max-w-sm font-medium leading-relaxed text-balance">
+                Live operational efficiency data for today's allocated loop rotation asset.
+              </p>
+              
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="bg-[var(--color-bg-soft)] p-3 sm:p-4 rounded-2xl border border-[var(--color-border)] min-w-0 text-center sm:text-left">
+                  <BatteryFull size={18} className="text-[var(--color-primary)] mb-1.5 mx-auto sm:mx-0" />
+                  <p className="text-[9px] sm:text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-tight truncate">Charge</p>
+                  <p className="text-xs sm:text-sm md:text-base font-black text-[var(--color-primary-dark)] truncate">94% Cap</p>
+                </div>
+                <div className="bg-[var(--color-bg-soft)] p-3 sm:p-4 rounded-2xl border border-[var(--color-border)] min-w-0 text-center sm:text-left">
+                  <Gauge size={18} className="text-[var(--color-primary)] mb-1.5 mx-auto sm:mx-0" />
+                  <p className="text-[9px] sm:text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-tight truncate">Eco-Drive</p>
+                  <p className="text-xs sm:text-sm md:text-base font-black text-[var(--color-primary-dark)] truncate">A+ Rating</p>
+                </div>
+                <div className="bg-[var(--color-bg-soft)] p-3 sm:p-4 rounded-2xl border border-[var(--color-border)] min-w-0 text-center sm:text-left">
+                  <Award size={18} className="text-[var(--color-primary)] mb-1.5 mx-auto sm:mx-0" />
+                  <p className="text-[9px] sm:text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-tight truncate">Logs</p>
+                  <p className="text-xs sm:text-sm md:text-base font-black text-[var(--color-primary-dark)] truncate">100% Ok</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="w-full md:w-5/12 relative h-48 sm:h-56 rounded-3xl overflow-hidden shadow-inner shrink-0">
+              <img 
+                src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=2070&auto=format&fit=crop" 
+                alt="Electric Shuttle Diagnostics"
+                className="w-full h-full object-cover opacity-90 group-hover:scale-102 transition-transform duration-700"
+              />
             </div>
           </div>
-          
-          <div className="bg-white border border-slate-100 p-8 rounded-[2.5rem] shadow-sm">
-            <h4 className="font-black text-lg mb-6 text-slate-900">System Status</h4>
+
+          {/* HISTORICAL SHIFT MILESTONES */}
+          <div className="bg-white border border-[var(--color-border)] rounded-[2.5rem] p-6 sm:p-8 shadow-2xs min-w-0">
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <CalendarDays size={20} className="text-[var(--color-primary)] shrink-0" />
+                <h4 className="text-lg sm:text-xl font-black text-[var(--color-primary-dark)] tracking-tight truncate">Recent Runtime Records</h4>
+              </div>
+              <span className="text-xs font-bold text-[var(--color-text-muted)] shrink-0 whitespace-nowrap">Past 3 Days</span>
+            </div>
+
             <div className="space-y-4">
               {[
-                { label: 'Fleet Network', status: 'Optimal', color: 'bg-emerald-500' },
-                { label: 'GPS Signal', status: 'Strong', color: 'bg-emerald-500' },
-                { label: 'Main St. Traffic', status: 'High Delay', color: 'bg-rose-500' },
-              ].map((item, i) => (
-                <div key={i} className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${item.color}`} />
-                    <span className="text-xs font-bold text-slate-600">{item.label}</span>
+                { date: "May 22, 2026", route: "Route 4A (Main Campus Loop)", hours: "6.5 hrs", distance: "112 km" },
+                { date: "May 21, 2026", route: "Route 2B (Science Extension)", hours: "8.0 hrs", distance: "145 km" },
+                { date: "May 20, 2026", route: "Route 4A (Main Campus Loop)", hours: "4.2 hrs", distance: "78 km" }
+              ].map((log, index) => (
+                <div key={index} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-[var(--color-bg-soft)] rounded-2xl border border-[var(--color-border)] gap-4 min-w-0">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">{log.date}</p>
+                    <h5 className="font-extrabold text-[var(--color-primary-dark)] text-sm mt-0.5 truncate">{log.route}</h5>
                   </div>
-                  <span className={`text-[10px] font-black uppercase ${item.status === 'High Delay' ? 'text-rose-500' : 'text-slate-400'}`}>
+                  <div className="flex items-center gap-4 sm:gap-6 text-xs font-bold text-[var(--color-primary-dark)] w-full sm:w-auto justify-between sm:justify-end shrink-0">
+                    <div className="whitespace-nowrap">
+                      <span className="block text-[9px] text-[var(--color-text-muted)] uppercase tracking-tight">Runtime</span>
+                      {log.hours}
+                    </div>
+                    <div className="whitespace-nowrap">
+                      <span className="block text-[9px] text-[var(--color-text-muted)] uppercase tracking-tight">Log Range</span>
+                      {log.distance}
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white px-2.5 py-1.5 rounded-xl border border-[var(--color-border)] text-[var(--color-primary-dark)] text-[10px] font-black uppercase whitespace-nowrap">
+                      <CheckCircle2 size={12} className="text-[var(--color-primary)] shrink-0" /> Verified
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT COMPONENT: TELEMETRY & DISPATCH FEEDS (4 COLS) */}
+        <div className="lg:col-span-4 flex flex-col gap-6 min-w-0">
+          
+          {/* ACTIVE SHIFT ACTION PANEL */}
+          <div className="bg-[var(--color-primary-dark)] p-6 sm:p-8 rounded-[2.5rem] text-white shadow-lg flex flex-col justify-between min-h-[190px] relative overflow-hidden group min-w-0">
+            <div className="relative z-10">
+              <h4 className="font-black text-lg tracking-tight mb-1 truncate">Shift Control Room</h4>
+              <p className="text-white/60 text-xs font-semibold text-balance">Broadcast active telemetry to tracking grid</p>
+            </div>
+            <div className="flex flex-col gap-3 mt-6 relative z-10 w-full">
+              <button className="w-full py-3.5 px-4 bg-white text-[var(--color-primary-dark)] rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-transform active:scale-98 shadow-sm hover:bg-[var(--color-bg-soft)] text-center truncate">
+                <PlayCircle size={18} strokeWidth={2.5} className="shrink-0" /> Initialize Tracking
+              </button>
+              <button className="w-full py-3.5 px-4 bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors hover:bg-white/15 text-center truncate">
+                <AlertTriangle size={18} className="shrink-0" /> Flag Maintenance Issue
+              </button>
+            </div>
+            <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-[var(--color-primary)]/20 rounded-full blur-2xl pointer-events-none" />
+          </div>
+          
+          {/* SYSTEM TELEMETRY DEVIATIONS */}
+          <div className="bg-white border border-[var(--color-border)] p-6 rounded-[2.5rem] shadow-2xs min-w-0">
+            <div className="flex items-center gap-2 mb-5">
+              <Radio size={16} className="text-[var(--color-primary)] shrink-0" />
+              <h4 className="font-black text-base text-[var(--color-primary-dark)] tracking-tight truncate">System Telemetry</h4>
+            </div>
+            <div className="space-y-3.5">
+              {[
+                { label: 'Fleet Node Sync', status: 'Optimal', active: true },
+                { label: 'GPS Transponder Signal', status: 'Strong', active: true },
+                { label: 'Congestion Detours', status: 'Active (2)', active: false },
+              ].map((item, i) => (
+                <div key={i} className="flex justify-between items-center py-2 border-b border-[var(--color-bg-soft)] last:border-0 last:pb-0 first:pt-0 gap-2 min-w-0">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${item.active ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-primary-dark)]'} shadow-2xs`} />
+                    <span className="text-xs font-bold text-[var(--color-primary-dark)] truncate">{item.label}</span>
+                  </div>
+                  <span className={`text-[10px] font-black uppercase tracking-wider shrink-0 whitespace-nowrap ${!item.active ? 'text-[var(--color-primary-dark)]' : 'text-[var(--color-text-muted)]'}`}>
                     {item.status}
                   </span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Route Timeline & Map */}
-        <div className="lg:col-span-12 bg-white border border-slate-100 rounded-[2.5rem] shadow-sm overflow-hidden flex flex-col lg:flex-row h-auto lg:h-[450px]">
-          <div className="w-full lg:w-1/2 p-10 overflow-y-auto border-r border-slate-50">
-            <div className="mb-8">
-              <h4 className="text-xl font-black text-slate-900">Upcoming Run: Route 4A</h4>
-              <p className="text-slate-400 text-sm font-bold uppercase tracking-tighter">Departs in 18 minutes</p>
-            </div>
+          {/* SIMPLIFIED DISPATCH ALERTS SUB-FEED */}
+          <div className="bg-white border border-[var(--color-border)] p-6 rounded-[2.5rem] shadow-2xs space-y-4 min-w-0">
+            <h4 className="text-sm font-black text-[var(--color-primary-dark)] uppercase tracking-wider truncate">Broadcast Bulletins</h4>
             
-            <div className="space-y-10 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
-              {[
-                { stop: 'Central Library Depot', time: '08:45 AM', sub: 'Gate 14B', badge: '12 Boarding', active: true },
-                { stop: 'Engineering Quad', time: '08:58 AM', sub: 'North Entrance', badge: '8 Waiting', active: false },
-                { stop: 'Stadium South Lot', time: '09:12 AM', sub: 'Commuter Station', badge: 'Terminus', active: false },
-              ].map((stop, i) => (
-                <div key={i} className="relative pl-10">
-                  <div className={`absolute left-0 top-1 w-6 h-6 rounded-full border-4 border-white shadow-sm z-10 ${stop.active ? 'bg-[#00623f]' : 'bg-slate-200'}`} />
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h5 className={`font-bold text-lg ${stop.active ? 'text-slate-900' : 'text-slate-400'}`}>{stop.stop}</h5>
-                      <p className="text-xs text-slate-400 font-medium">{stop.sub}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`font-black text-sm ${stop.active ? 'text-[#00623f]' : 'text-slate-400'}`}>{stop.time}</p>
-                      <span className="bg-slate-50 text-slate-500 text-[9px] px-2 py-1 rounded-lg font-black uppercase tracking-tighter">{stop.badge}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="w-full lg:w-1/2 relative min-h-[300px] bg-slate-100">
-            <img 
-              src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2074&auto=format&fit=crop" 
-              className="w-full h-full object-cover grayscale opacity-50" 
-              alt="Campus Map" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-white to-transparent" />
-            <div className="absolute bottom-8 left-8 right-8 bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-xl flex justify-between items-center">
-              <div className="flex items-center gap-4">
-                <div className="bg-[#00623f] w-10 h-10 rounded-xl flex items-center justify-center text-white">
-                  <MapIcon size={20} />
-                </div>
-                <div>
-                  <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Live Traffic</p>
-                  <p className="text-sm font-black text-slate-900">Clear to Quad</p>
-                </div>
+            <div className="p-4 rounded-xl bg-[var(--color-bg-soft)] border border-[var(--color-border)] space-y-1 min-w-0">
+              <div className="flex items-center gap-2 text-[var(--color-primary-dark)] min-w-0">
+                <Info size={14} className="shrink-0" />
+                <p className="text-xs font-black truncate">Route Realignment Update</p>
               </div>
-              <div className="flex gap-2">
-                <button className="p-2 bg-white rounded-xl shadow-sm hover:bg-slate-50 transition-colors border border-slate-100"><Clock size={16} /></button>
-                <button className="p-2 bg-white rounded-xl shadow-sm hover:bg-slate-50 transition-colors border border-slate-100"><Info size={16} /></button>
-              </div>
+              <p className="text-[11px] text-[var(--color-text-muted)] font-medium leading-relaxed pl-5 line-clamp-2 sm:line-clamp-none text-balance">
+                Construction ongoing near Elm St. Pull down 4th Ave detour loops.
+              </p>
             </div>
-          </div>
-        </div>
 
-        {/* Dispatch Comms */}
-        <div className="lg:col-span-12 bg-white border border-slate-100 p-10 rounded-[2.5rem] shadow-sm">
-          <h4 className="text-xl font-black text-slate-900 mb-8">Dispatch Comms</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div className="flex gap-5 p-6 rounded-[1.5rem] bg-emerald-50/50 border border-emerald-100 transition-all hover:shadow-md shadow-emerald-100/20">
-                <div className="w-12 h-12 rounded-2xl bg-[#cfef7a] flex items-center justify-center text-[#546d00] shrink-0">
-                  <Info size={24} />
-                </div>
-                <div>
-                  <p className="text-sm font-black text-slate-900">New Route Adjustment</p>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1">Construction on Elm St. Use 4th Ave bypass until further notice.</p>
-                  <p className="text-[10px] text-emerald-600 font-black mt-3 uppercase tracking-tighter">12 MIN AGO</p>
-                </div>
-             </div>
-             <div className="flex gap-5 p-6 rounded-[1.5rem] bg-slate-50 border border-slate-100 transition-all hover:shadow-md">
-                <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-slate-400 shrink-0">
-                  <Mail size={24} />
-                </div>
-                <div>
-                  <p className="text-sm font-black text-slate-900">Shift Confirmation</p>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1">Your weekend overtime request has been approved by Dispatch.</p>
-                  <p className="text-[10px] text-slate-400 font-black mt-3 uppercase tracking-tighter">2 HOURS AGO</p>
-                </div>
-             </div>
+            <div className="p-4 rounded-xl bg-[var(--color-bg-soft)] border border-[var(--color-border)] space-y-1 min-w-0">
+              <div className="flex items-center gap-2 text-[var(--color-text-muted)] min-w-0">
+                <Mail size={14} className="shrink-0" />
+                <p className="text-xs font-black truncate">Shift Schedule Released</p>
+              </div>
+              <p className="text-[11px] text-[var(--color-text-muted)] font-medium leading-relaxed pl-5 line-clamp-2 sm:line-clamp-none text-balance">
+                Alternative premium weekend runtimes processed securely.
+              </p>
+            </div>
           </div>
+
         </div>
+        
       </div>
     </div>
   );

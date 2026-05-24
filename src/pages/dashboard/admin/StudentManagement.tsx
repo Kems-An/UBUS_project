@@ -1,247 +1,306 @@
 import React, { useState } from 'react';
 import { 
-  TrendingUp, 
   Users, 
-  Bus, 
+  UserPlus,
   CalendarCheck, 
-  Wallet, 
-  ArrowUpRight,  
-  Clock, 
-  AlertCircle, 
-  MoreHorizontal,
+  CircleDollarSign, 
+  Search, 
+  Edit3, 
+  Trash2, 
+  UserCheck,
+  MoreVertical,
   ChevronRight,
-  MapPin
+  Filter,
+  ArrowUpRight
 } from 'lucide-react';
 
+// --- Types & Interfaces ---
+interface Student {
+  id: string;
+  matricule: string;
+  name: string;
+  email: string;
+  department: string;
+  status: 'Active' | 'Suspended';
+}
+
+interface Booking {
+  id: string;
+  studentName: string;
+  matricule: string;
+  route: string;
+  time: string;
+  fare: string;
+  status: 'Confirmed' | 'Scanned' | 'Missed';
+}
+
 const StudentsManagement: React.FC = () => {
-  const [timeframe, setTimeframe] = useState('Today');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Suspended'>('All');
+
+  // Simulated Database State for Registered Students
+  const [students, setStudents] = useState<Student[]>([
+    { id: '1', matricule: 'UB22A402', name: 'Elena Smith', email: 'elena.smith@ubuea.cm', department: 'FET (Software)', status: 'Active' },
+    { id: '2', matricule: 'UB23B115', name: 'Julian Weaver', email: 'julian.w@ubuea.cm', department: 'FS (Biochemistry)', status: 'Active' },
+    { id: '3', matricule: 'UB21C084', name: 'Marcus Reed', email: 'm.reed@ubuea.cm', department: 'ASTI (Translation)', status: 'Suspended' },
+    { id: '4', matricule: 'UB22A109', name: 'Carine Ngo', email: 'carine.ngo@ubuea.cm', department: 'FSMS (Economics)', status: 'Active' },
+  ]);
+
+  // Simulated Real-Time Booking Ledger
+  const [bookings] = useState<Booking[]>([
+    { id: 'B901', studentName: 'Elena Smith', matricule: 'UB22A402', route: 'Mile 17 → Main Campus', time: '07:45 AM', fare: '150 FCFA', status: 'Confirmed' },
+    { id: 'B902', studentName: 'Julian Weaver', matricule: 'UB23B115', route: 'Molyko → UB Junction', time: '08:15 AM', fare: '150 FCFA', status: 'Scanned' },
+    { id: 'B903', studentName: 'Carine Ngo', matricule: 'UB22A109', route: 'Biaka → Main Campus', time: '09:00 AM', fare: '200 FCFA', status: 'Confirmed' },
+  ]);
+
+  // --- CRUD Operational Triggers ---
+  const handleEditStudent = (id: string) => {
+    console.log(`Trigger Edit Modal/Routing for student ID: ${id}`);
+    // Tie into your routing or central state modal system here
+  };
+
+  const handleDeleteStudent = (id: string) => {
+    if (confirm('Are you sure you want to remove this student from the registry?')) {
+      setStudents(students.filter(student => student.id !== id));
+    }
+  };
+
+  const handleCreateStudent = () => {
+    console.log('Trigger Add New Student Modal');
+  };
+
+  // Filtered Student List Logic
+  const filteredStudents = students.filter(student => {
+    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          student.matricule.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = statusFilter === 'All' || student.status === statusFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
-    <div className="flex-1 p-8 space-y-10 animate-in fade-in duration-700">
+    <div className="p-4 lg:p-10 max-w-[1600px] mx-auto w-full animate-in fade-in duration-300 space-y-10">
       
-      {/* --- Page Header --- */}
-      <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-        <div className="space-y-1">
-          <h2 className="text-4xl font-black text-slate-900 tracking-tight">
-            Operational <span className="text-emerald-600">Overview</span>
+      {/* ─── LAYER 1: VIEWPORT CONTEXT HEADER ─── */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h2 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight">
+            Student <span className="text-[var(--color-primary)]">Registry Matrix</span>
           </h2>
-          <p className="text-slate-500 font-medium">
-            Real-time performance metrics for the Academic Velocity shuttle network.
+          <p className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-1">
+            Account Provisioning, Transit Access Profiles, & Booking Data Ledger
           </p>
         </div>
-
-        {/* Segmented Control */}
-        <div className="flex bg-slate-200/50 p-1.5 rounded-2xl border border-slate-200">
-          {['Today', 'Week', 'Month'].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTimeframe(t)}
-              className={`px-6 py-2 text-xs font-bold rounded-xl transition-all ${
-                timeframe === t 
-                ? "bg-white text-slate-900 shadow-sm" 
-                : "text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* --- KPI Grid (Bento Style) --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total Students" 
-          value="12,482" 
-          trend="+15%" 
-          icon={<Users size={22} />} 
-          color="emerald" 
-        />
-        <StatCard 
-          title="Active Drivers" 
-          value="42" 
-          subValue="/ 56" 
-          trend="Live" 
-          icon={<Bus size={22} />} 
-          color="slate" 
-          isLive
-        />
-        <StatCard 
-          title="Bookings" 
-          value="1,240" 
-          subValue="82% Cap." 
-          icon={<CalendarCheck size={22} />} 
-          color="emerald" 
-        />
-        <StatCard 
-          title="Total Revenue" 
-          value="$24,850" 
-          icon={<Wallet size={22} />} 
-          color="dark" 
-        />
-      </div>
-
-      {/* --- Visualization Section --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Main Chart Area */}
-        <div className="lg:col-span-8 bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm relative overflow-hidden group">
-          <div className="flex justify-between items-center mb-10 relative z-10">
-            <div>
-              <h3 className="font-bold text-xl text-slate-900">Shuttle Utilization</h3>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Passenger load over time</p>
-            </div>
-            <button className="p-2 hover:bg-slate-50 rounded-xl transition-colors">
-              <MoreHorizontal className="text-slate-400" />
-            </button>
-          </div>
+        <button 
+          onClick={handleCreateStudent}
+          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-md transition-all active:scale-98 self-end md:self-auto"
+        >
+          <UserPlus size={16} /> Register Student
+        </button>
+      </header>
 
-          {/* Simulated Chart Bars */}
-          <div className="h-64 flex items-end justify-between gap-4 relative z-10">
-            {[40, 75, 55, 90, 65, 30, 80].map((height, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-4 group/bar">
-                <div className="w-full bg-slate-50 rounded-2xl relative h-full flex flex-col justify-end overflow-hidden">
-                  <div 
-                    className="bg-emerald-500/20 group-hover/bar:bg-emerald-500/40 transition-all duration-500 rounded-t-xl" 
-                    style={{ height: `${height}%` }}
-                  >
-                    <div className="h-1 w-full bg-emerald-500 opacity-0 group-hover/bar:opacity-100 transition-opacity" />
-                  </div>
-                </div>
-                <span className="text-[10px] font-black text-slate-400">{8 + i * 2}:00</span>
-              </div>
-            ))}
-          </div>
-          {/* Decorative Background Element */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50/50 rounded-full blur-[100px] -mr-32 -mt-32" />
-        </div>
-
-        {/* Route Status Sidebar */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden h-full flex flex-col">
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 text-emerald-400 mb-6">
-                <AlertCircle size={18} />
-                <span className="text-xs font-black uppercase tracking-[0.2em]">Live Insights</span>
-              </div>
-              <h3 className="text-2xl font-bold leading-tight mb-6">Route Optimization Recommended</h3>
-              
-              <div className="space-y-4">
-                <RouteMiniCard name="East Gate Express" status="Critical" delay="+12m" />
-                <RouteMiniCard name="Science Hall" status="Normal" delay="On Time" />
-              </div>
-            </div>
-            
-            <button className="mt-auto relative z-10 w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-xl shadow-emerald-500/20">
-              Dispatch Standby
-            </button>
-            <div className="absolute -right-16 -bottom-16 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
-          </div>
-        </div>
+      {/* ─── LAYER 2: STUDENT FINANCIALS & ACCUMULATORS ─── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard label="Registered Profiles" value={students.length.toString()} trend="Total DB" icon={<Users size={22} />} variant="primary" />
+        <MetricCard label="Active Transit Passes" value={students.filter(s => s.status === 'Active').length.toString()} trend="Eligible" icon={<UserCheck size={22} />} variant="secondary" />
+        <MetricCard label="Active Ride Bookings" value={bookings.length.toString()} trend="Today" icon={<CalendarCheck size={22} />} variant="primary" />
+        <MetricCard label="Student Ledger Revenue" value="342,500 FCFA" trend="Gross MTD" icon={<CircleDollarSign size={22} />} variant="dark" />
       </div>
 
-      {/* --- Recent Bookings Table --- */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-10 py-8 flex justify-between items-center border-b border-slate-50">
-          <h3 className="font-bold text-xl text-slate-900">Recent Bookings</h3>
-          <button className="group flex items-center gap-2 text-xs font-black text-emerald-600 uppercase tracking-widest">
-            Full Registry <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+      {/* ─── LAYER 3: CORE STUDENT DIRECTORY (WITH CRUD) ─── */}
+      <div className="bg-white rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden">
+        
+        {/* Table Management & Filtering Header */}
+        <div className="p-6 border-b border-[var(--color-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="relative w-full sm:max-w-xs group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-primary)] transition-colors" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search by name or matricule..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-[var(--color-bg-soft)] border border-[var(--color-border)] rounded-xl text-xs font-semibold text-[var(--color-text-main)] outline-none focus:bg-white focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-all"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <Filter size={14} className="text-[var(--color-text-muted)]" />
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="bg-white border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-xs font-black uppercase tracking-wider text-[var(--color-text-main)] outline-none cursor-pointer"
+            >
+              <option value="All">All Standings</option>
+              <option value="Active">Active Status</option>
+              <option value="Suspended">Suspended Status</option>
+            </select>
+          </div>
         </div>
+
+        {/* Directory Matrix Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50">
-                <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Student</th>
-                <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Route Path</th>
-                <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                <th className="px-10 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Fare</th>
+              <tr className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest bg-[var(--color-bg-soft)] border-b border-[var(--color-border)]">
+                <th className="px-6 py-4">Student Info</th>
+                <th className="px-6 py-4">Matricule</th>
+                <th className="px-6 py-4">Academic Division</th>
+                <th className="px-6 py-4">System Status</th>
+                <th className="px-6 py-4 text-center">Action Controls</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              <TableRow name="Elena Smith" route="Academic Core → Science Hall" status="Completed" />
-              <TableRow name="Julian Weaver" route="Sports Complex → West Dorm" status="In Transit" />
-              <TableRow name="Marcus Reed" route="Main Library → North Campus" status="Delayed" />
+            <tbody className="divide-y divide-[var(--color-border)]">
+              {filteredStudents.length > 0 ? (
+                filteredStudents.map((student) => (
+                  <tr key={student.id} className="hover:bg-[var(--color-bg-soft)]/40 transition-colors">
+                    <td className="px-6 py-4.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[var(--color-bg-soft)] border border-[var(--color-border)] flex items-center justify-center font-black text-xs text-[var(--color-primary)]">
+                          {student.name.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-[var(--color-primary-dark)]">{student.name}</p>
+                          <p className="text-xs text-[var(--color-text-muted)] font-medium mt-0.5">{student.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4.5 text-xs font-black text-[var(--color-primary-dark)]">{student.matricule}</td>
+                    <td className="px-6 py-4.5 text-xs font-bold text-[var(--color-text-muted)]">{student.department}</td>
+                    <td className="px-6 py-4.5">
+                      <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                        student.status === 'Active' 
+                          ? 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)]' 
+                          : 'bg-rose-50 text-rose-600 border border-rose-100'
+                      }`}>
+                        {student.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4.5">
+                      <div className="flex items-center justify-center gap-2">
+                        <button 
+                          onClick={() => handleEditStudent(student.id)}
+                          className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg-soft)] rounded-lg transition-all"
+                          title="Modify Account Record"
+                        >
+                          <Edit3 size={15} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteStudent(student.id)}
+                          className="p-2 text-[var(--color-text-muted)] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                          title="Revoke Student From System"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-xs font-bold text-[var(--color-text-muted)]">
+                    No student records matching current constraints found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* ─── LAYER 4: RECENT ACTIVE SHUTTLE BOOKINGS BY STUDENTS ─── */}
+      <div className="bg-white rounded-2xl shadow-sm border border-[var(--color-border)] overflow-hidden">
+        <div className="p-6 sm:p-8 flex justify-between items-center border-b border-[var(--color-border)]">
+          <div>
+            <h3 className="text-lg font-black tracking-tight text-[var(--color-primary-dark)]">Live Ride Manifest</h3>
+            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5">
+              Active tracking of student shuttle reservations
+            </p>
+          </div>
+          <button className="flex items-center gap-1 text-xs font-black text-[var(--color-primary)] uppercase tracking-widest transition-transform hover:translate-x-0.5">
+            View Live Board <ChevronRight size={14} />
+          </button>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest bg-[var(--color-bg-soft)] border-b border-[var(--color-border)]">
+                <th className="px-8 py-4 font-black">Student Passenger</th>
+                <th className="px-8 py-4 font-black">Route Path Vector</th>
+                <th className="px-8 py-4 font-black">Departure Time</th>
+                <th className="px-8 py-4 font-black">Access Fee</th>
+                <th className="px-8 py-4 font-black">Ticket Status</th>
+                <th className="px-8 py-4 font-black text-right">Receipt Details</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--color-border)]">
+              {bookings.map((booking) => (
+                <tr key={booking.id} className="hover:bg-[var(--color-bg-soft)]/50 transition-colors group">
+                  <td className="px-8 py-4.5">
+                    <div>
+                      <span className="text-sm font-bold text-[var(--color-primary-dark)] block">{booking.studentName}</span>
+                      <span className="text-[10px] font-bold text-[var(--color-text-muted)] tracking-wider block mt-0.5">{booking.matricule}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-4.5 text-xs font-semibold text-[var(--color-text-main)]">{booking.route}</td>
+                  <td className="px-8 py-4.5 text-xs font-bold text-[var(--color-text-muted)]">{booking.time}</td>
+                  <td className="px-8 py-4.5 text-xs font-black text-[var(--color-primary-dark)]">{booking.fare}</td>
+                  <td className="px-8 py-4.5">
+                    <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                      booking.status === 'Scanned'
+                        ? 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)]'
+                        : 'bg-blue-50 text-blue-600 border border-blue-100'
+                    }`}>
+                      {booking.status}
+                    </span>
+                  </td>
+                  <td className="px-8 py-4.5 text-right">
+                    <button className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors">
+                      <ArrowUpRight size={16} className="ml-auto opacity-60 group-hover:opacity-100 transition-all" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   );
 };
 
-// --- Sub-Components ---
+// ─── REUSABLE DESIGN LAYOUT COMPONENTS ───
 
-const StatCard = ({ title, value, trend, subValue, icon, color, isLive }: any) => {
-  const themes: any = {
-    emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    slate: "bg-slate-50 text-slate-600 border-slate-100",
-    dark: "bg-slate-900 text-white border-slate-800",
+interface MetricCardProps {
+  label: string;
+  value: string;
+  trend: string;
+  icon: React.ReactNode;
+  variant: 'primary' | 'secondary' | 'dark';
+}
+
+const MetricCard = ({ label, value, trend, icon, variant }: MetricCardProps) => {
+  const containerThemes = {
+    primary: 'bg-[var(--color-bg-soft)] text-[var(--color-primary)] border-[var(--color-border)]',
+    secondary: 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)] border-[var(--color-border)]',
+    dark: 'bg-[var(--color-primary-dark)] text-white border-transparent'
   };
 
   return (
-    <div className={`p-7 rounded-[2rem] border bg-white shadow-sm hover:shadow-md transition-all group`}>
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--color-border)] transition-all duration-300 hover:shadow-md">
       <div className="flex justify-between items-start mb-6">
-        <div className={`p-3 rounded-2xl ${themes[color] || themes.slate}`}>
+        <div className={`p-3 rounded-xl border ${containerThemes[variant]}`}>
           {icon}
         </div>
-        {trend && (
-          <span className={`flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-lg ${isLive ? 'bg-emerald-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500'}`}>
-            {trend}
-          </span>
-        )}
+        <div className="px-2.5 py-1 bg-[var(--color-bg-soft)] rounded-md border border-[var(--color-border)]">
+          <span className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">{trend}</span>
+        </div>
       </div>
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-      <div className="flex items-baseline gap-2">
-        <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
-        {subValue && <span className="text-sm font-bold text-slate-300">{subValue}</span>}
-      </div>
+      <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-1">{label}</p>
+      <h3 className="text-2xl font-black tracking-tight text-[var(--color-primary-dark)]">{value}</h3>
     </div>
   );
 };
-
-const RouteMiniCard = ({ name, status, delay }: any) => (
-  <div className="bg-white/5 p-4 rounded-2xl border border-white/5 flex items-center justify-between group hover:bg-white/10 transition-colors cursor-default">
-    <div className="flex items-center gap-3">
-      <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400">
-        <MapPin size={14} />
-      </div>
-      <div>
-        <p className="text-xs font-bold">{name}</p>
-        <p className="text-[10px] text-slate-400 font-medium">{delay}</p>
-      </div>
-    </div>
-    <span className={`text-[10px] font-black px-2 py-1 rounded ${status === 'Critical' ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-      {status}
-    </span>
-  </div>
-);
-
-const TableRow = ({ name, route, status }: any) => (
-  <tr className="hover:bg-slate-50/50 transition-colors group">
-    <td className="px-10 py-5">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center font-black text-xs text-slate-500">
-          {name.split(' ').map((n:any) => n[0]).join('')}
-        </div>
-        <span className="text-sm font-bold text-slate-700">{name}</span>
-      </div>
-    </td>
-    <td className="px-10 py-5 text-sm font-medium text-slate-500">{route}</td>
-    <td className="px-10 py-5">
-      <span className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest ${
-        status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : 
-        status === 'Delayed' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600'
-      }`}>
-        {status}
-      </span>
-    </td>
-    <td className="px-10 py-5 text-right">
-      <button className="p-2 text-slate-300 hover:text-slate-900 transition-colors">
-        <ArrowUpRight size={18} />
-      </button>
-    </td>
-  </tr>
-);
 
 export default StudentsManagement;

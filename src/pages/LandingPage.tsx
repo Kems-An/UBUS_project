@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import caroussel1  from "../assets/images/caroussel1.jpeg"
-import caroussel2  from "../assets/images/caroussel2.jpeg"
-import hero  from "../assets/images/hero.png"
+import caroussel1 from "../assets/images/caroussel1.jpeg";
+import caroussel2 from "../assets/images/caroussel2.jpeg";
+import hero from "../assets/images/hero.png";
 
 import { 
   MapPinned, 
@@ -10,132 +10,195 @@ import {
   Wallet, 
   Armchair, 
   BarChart3, 
-  Headphones, 
-  Link
+  Headphones,
+  Compass,
+  QrCode,
+  ShieldCheck,
+  Star
 } from 'lucide-react';
-import { img } from 'framer-motion/client';
 
-// ── HERO SECTION WITH TEXT OVERLAY ──────────────────────────
+// ── HERO SECTION (UNTOUCHED) ──
 function Hero() {
-  const carouselImages = [
-    caroussel1,
-    caroussel2,
-    hero
-  
-  ];
-
+  const carouselImages = [caroussel1, caroussel2, hero];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % carouselImages.length);
-    }, 5000);
+    }, 4500);
     return () => clearInterval(timer);
   }, [carouselImages.length]);
 
   return (
-    <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden bg-white">
-      {/* 1. Background Carousel */}
-      <div className="absolute inset-0 z-0">
-        <AnimatePresence mode="wait">
-          <motion.img
-            key={index}
-            src={carouselImages[index]}
-            initial={{ opacity: 0, scale: 1.1 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-            className="absolute inset-0 w-full h-full object-cover"
-            alt="Campus Transit"
-          />
-        </AnimatePresence>
-        {/* Dark Overlay for Readability */}
-        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]" />
-      </div>
-
-      {/* 2. Content Overlay (Text on Top) */}
-      <div className="relative z-10 h-full max-w-7xl mx-auto px-6 flex flex-col justify-center items-center text-center">
-        <motion.h1 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-5xl md:text-8xl font-black text-white mb-6 tracking-tighter leading-[0.9]"
-        >
-          The Future of Commuting <br />
-          with <span className="text-lime-400">UB Shuttle</span>
-        </motion.h1>
+    <section className="relative min-h-[calc(100vh-5rem)] pt-28 pb-16 flex items-center bg-white overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-slate-200 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-medium"
-        >
-          Expert tech to elevate your campus mobility. Real-time tracking, 
-          AI-driven routing, and seamless digital boarding.
-        </motion.p>
+        {/* Left Column */}
+        <div className="lg:col-span-6 flex flex-col text-left">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-bg-soft)] border border-[var(--color-border)] w-fit mb-6"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Smart Campus Transit Ecosystem</span>
+          </motion.div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.6 }}
-          className="flex flex-wrap justify-center gap-4"
-        >
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-black text-[var(--color-primary-dark)] tracking-tighter leading-[0.95] mb-6"
+          >
+            The future of commuting with <span className="text-[var(--color-primary)]">UB Shuttle</span>
+          </motion.h1>
           
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-[var(--color-text-muted)] text-sm md:text-sm max-w-xl mb-10 leading-relaxed font-medium"
+          >
+            Elevate your campus mobility. Access real-time satellite tracking, smart AI scheduling intervals, and secure digital boarding keys straight from your student hub.
+          </motion.p>
 
-          <button
-           className="bg-lime-400 text-slate-900 px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest hover:bg-lime-300 transition-all shadow-xl shadow-lime-400/20">
-            Get Started
-          </button>
-           
-          
-          <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest hover:bg-white/20 transition-all">
-            Try Demo
-          </button>
-        </motion.div>
-
-        {/* Carousel Indicators */}
-        <div className="absolute bottom-10 flex gap-3">
-          {carouselImages.map((_, i) => (
-            <button 
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`h-1.5 rounded-full transition-all duration-500 ${
-                i === index ? 'bg-lime-400 w-12' : 'bg-white/30 w-3 hover:bg-white/50'
-              }`} 
-            />
-          ))}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-wrap gap-4"
+          >
+            <button className="px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white shadow-md hover:opacity-90 transition-all active:scale-98" style={{ background: 'var(--color-primary-dark)' }}>
+              Get Started
+            </button>
+            <button className="bg-white border border-[var(--color-border)] text-[var(--color-primary-dark)] px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[var(--color-bg-soft)] transition-all active:scale-98">
+              Try Demo
+            </button>
+          </motion.div>
         </div>
+
+        {/* Right Column */}
+        <div className="lg:col-span-6 w-full h-[350px] sm:h-[450px] relative">
+          <div className="absolute inset-0 rounded-[2.5rem] border border-[var(--color-border)] p-3 bg-[var(--color-bg-soft)] shadow-sm">
+            <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-neutral-100 shadow-inner">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={index}
+                  src={carouselImages[index]}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  alt="UBUS Smart Vehicle Fleet"
+                />
+              </AnimatePresence>
+            </div>
+          </div>
+
+          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+            {carouselImages.map((_, i) => (
+              <button 
+                key={i}
+                onClick={() => setIndex(i)}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  i === index ? 'bg-[var(--color-primary-dark)] w-8' : 'bg-[var(--color-border)] w-2 hover:bg-[var(--color-text-muted)]'
+                }`} 
+                aria-label={`Go to slide ${i + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+
       </div>
     </section>
   );
 }
 
-// ── FEATURES SECTION ────────────────────────────────────────
-function Features() {
-  const features = [
-    { title: "Real-time Tracking", desc: "Live GPS updates for every shuttle on campus. Know exactly where your ride is.", icon: <MapPinned size={26} className="text-indigo-600" /> },
-    { title: "Smart Scheduling", desc: "AI-optimized routes based on class timetables to reduce your waiting time.", icon: <Cpu size={26} className="text-purple-600" /> },
-    { title: "Digital Payments", desc: "Seamless MoMo & Student ID integration. Pay in seconds without looking for change.", icon: <Wallet size={26} className="text-emerald-600" /> },
-    { title: "Seat Reservation", desc: "Guarantee your spot before the bus arrives. No more standing in long queues.", icon: <Armchair size={26} className="text-orange-600" /> },
-    { title: "Route Analytics", desc: "View peak hours and optimize your departure times for a smoother commute.", icon: <BarChart3 size={26} className="text-blue-600" /> },
-    { title: "Instant Support", desc: "24/7 assistance for all transit queries via our dedicated support line.", icon: <Headphones size={26} className="text-rose-600" /> },
+// ── HOW IT WORKS SECTION (WITH COLORFUL BG TINTS FOR ICONS) ──
+function HowItWorks() {
+  const steps = [
+    { 
+      number: "01", 
+      title: "Activate Portal Pass", 
+      desc: "Log into your secure student portal and activate an operational route pass tailored to your class timetables.", 
+      icon: <Compass className="text-blue-600" size={22} />,
+      iconBg: "bg-blue-50 border-blue-100"
+    },
+    { 
+      number: "02", 
+      title: "Monitor Fleet Position", 
+      desc: "Track live operational positions of active shuttles on our live platform grid map to minimize depot wait delays.", 
+      icon: <MapPinned className="text-amber-500" size={22} />,
+      iconBg: "bg-amber-50 border-amber-100"
+    },
+    { 
+      number: "03", 
+      title: "Board & Standardize", 
+      desc: "Present your secure encrypted digital booking ID pass key to the terminal vehicle scanner for instant verification.", 
+      icon: <QrCode className="text-purple-600" size={22} />,
+      iconBg: "bg-purple-50 border-purple-100"
+    }
   ];
 
   return (
-    <section className="bg-white py-32">
+    <section className="bg-[var(--color-bg-soft)] py-28 border-y border-[var(--color-border)]/60">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-20">
-          <h2 className="text-lime-600 uppercase tracking-[0.2em] text-xs font-black mb-4">Our Services</h2>
-          <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Everything you need for a smooth commute</h3>
+        
+        <div className="text-center max-w-xl mx-auto mb-20">
+          <h2 className="text-[var(--color-primary)] uppercase tracking-[0.2em] text-[10px] font-black mb-3">Workflow</h2>
+          <h3 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight">How the system operates</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+          {steps.map((step, i) => (
+            <div key={i} className="relative bg-white border border-[var(--color-border)] rounded-[2rem] p-8 flex flex-col justify-between shadow-2xs group hover:border-[var(--color-primary)] transition-colors duration-300">
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  {/* Dynamic Color Backgrounds for distinct visual structure */}
+                  <div className={`w-12 h-12 border rounded-xl flex items-center justify-center ${step.iconBg}`}>
+                    {step.icon}
+                  </div>
+                  <span className="text-3xl font-black tracking-tight text-[var(--color-border)] group-hover:text-[var(--color-primary)]/20 transition-colors">{step.number}</span>
+                </div>
+                <h4 className="text-base font-black text-[var(--color-primary-dark)] mb-3">{step.title}</h4>
+                <p className="text-[var(--color-text-muted)] text-xs leading-relaxed font-semibold">{step.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
+// ── SERVICES / FEATURES SECTION (WITH DIVERSE TECH-ACCENT COLOR MATRICES) ──
+function Features() {
+  const features = [
+    { title: "Real-time Tracking", desc: "Live GPS updates for every shuttle on campus. Know exactly where your ride is.", icon: <MapPinned size={22} className="text-indigo-600" />, bg: "bg-indigo-50/70 border-indigo-100" },
+    { title: "Smart Scheduling", desc: "AI-optimized routes based on class timetables to reduce your waiting time.", icon: <Cpu size={22} className="text-fuchsia-600" />, bg: "bg-fuchsia-50/70 border-fuchsia-100" },
+    { title: "Digital Payments", desc: "Seamless MoMo & Student ID integration. Pay in seconds without looking for change.", icon: <Wallet size={22} className="text-emerald-600" />, bg: "bg-emerald-50/70 border-emerald-100" },
+    { title: "Seat Reservation", desc: "Guarantee your spot before the bus arrives. No more standing in long queues.", icon: <Armchair size={22} className="text-orange-500" />, bg: "bg-orange-50/70 border-orange-100" },
+    { title: "Route Analytics", desc: "View peak hours and optimize your departure times for a smoother commute.", icon: <BarChart3 size={22} className="text-sky-600" />, bg: "bg-sky-50/70 border-sky-100" },
+    { title: "Instant Support", desc: "24/7 assistance for all transit queries via our dedicated support line.", icon: <Headphones size={22} className="text-rose-500" />, bg: "bg-rose-50/70 border-rose-100" },
+  ];
+
+  return (
+    <section className="bg-white py-28">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-20">
+          <h2 className="text-[var(--color-primary)] uppercase tracking-[0.2em] text-[10px] font-black mb-3">Our Services</h2>
+          <h3 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight">Everything you need for a smooth commute</h3>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {features.map((f, i) => (
-            <div key={i} className="bg-slate-50 p-10 rounded-[2.5rem] border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
-              <div className="mb-6 p-4 bg-white inline-block rounded-2xl shadow-sm">{f.icon}</div>
-              <h4 className="text-xl font-black text-slate-900 mb-3">{f.title}</h4>
-              <p className="text-slate-600 text-sm leading-relaxed font-medium">{f.desc}</p>
+            <div key={i} className="bg-white p-8 rounded-[2rem] border border-[var(--color-border)] hover:shadow-md transition-all group">
+              {/* Vibrant individual wrapper frames break down monochromatic green themes */}
+              <div className={`mb-5 p-3.5 border inline-block rounded-xl ${f.bg}`}>{f.icon}</div>
+              <h4 className="text-base font-black text-[var(--color-primary-dark)] mb-2">{f.title}</h4>
+              <p className="text-[var(--color-text-muted)] text-xs leading-relaxed font-semibold">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -144,34 +207,97 @@ function Features() {
   );
 }
 
-// ── PRICING SECTION ─────────────────────────────────────────
+// ── REVIEWS SECTION (UNTOUCHED) ──
+function Reviews() {
+  const testimonials = [
+    { name: "Brenda T.", role: "FET Student", text: "Real-time mapping entirely eliminated my daily tracking anxieties before morning lectures." },
+    { name: "Mark A.", role: "FS Student", text: "Purchasing my pass directly via mobile money on the web interface took seconds. Highly recommended." },
+    { name: "Dr. Collins N.", role: "Campus Admin", text: "The system provides our tracking team complete diagnostic fleet command data parameters safely." },
+    { name: "Stacy W.", role: "ASTI Student", text: "Seat confirmation tools guarantee I am never stranded at the central loop terminal anymore." },
+    { name: "Emmanuel E.", role: "COT Student", text: "Clean layout interfaces that look premium and work exceptionally well on mobile viewports." }
+  ];
+
+  const duplicatedTestimonials = [...testimonials, ...testimonials, ...testimonials];
+
+  return (
+    <section className="bg-white py-24 overflow-hidden border-t border-[var(--color-border)]/60">
+      <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
+        <h2 className="text-[var(--color-primary)] uppercase tracking-[0.2em] text-[10px] font-black mb-3">User Feedback</h2>
+        <h3 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight">Trusted by campus commuters</h3>
+      </div>
+
+      <div className="relative flex w-full overflow-x-hidden py-4 mask-gradient">
+        <motion.div 
+          className="flex gap-6 shrink-0 pr-6"
+          animate={{ x: [0, -2000] }}
+          transition={{
+            ease: "linear",
+            duration: 35,
+            repeat: Infinity,
+          }}
+        >
+          {duplicatedTestimonials.map((review, i) => (
+            <div 
+              key={i} 
+              className="w-[280px] sm:w-[320px] bg-[var(--color-bg-soft)] border border-[var(--color-border)] rounded-2xl p-6 flex flex-col justify-between shrink-0"
+            >
+              <div>
+                <div className="flex gap-0.5 mb-4 text-[var(--color-primary)]">
+                  {[...Array(5)].map((_, idx) => <Star key={idx} size={12} fill="currentColor" />)}
+                </div>
+                <p className="text-[var(--color-text-main)] text-xs font-semibold leading-relaxed mb-6">
+                  "{review.text}"
+                </p>
+              </div>
+              <div className="flex items-center gap-2.5 pt-4 border-t border-[var(--color-border)]/60">
+                <div className="w-8 h-8 rounded-full bg-[var(--color-primary-dark)] text-white font-black text-[10px] flex items-center justify-center uppercase">
+                  {review.name.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-[var(--color-primary-dark)] leading-none">{review.name}</h4>
+                  <span className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mt-1 block">{review.role}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ── PRICING SECTION (UNTOUCHED) ──
 function Pricing() {
   return (
-    <section className="bg-slate-50 py-32">
+    <section className="bg-[var(--color-bg-soft)] py-28 border-t border-[var(--color-border)]/60">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <h3 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Flexible Plans</h3>
-          <p className="text-slate-500 font-bold uppercase text-xs tracking-widest">Pick the pass that fits your schedule</p>
+          <h3 className="text-3xl font-black text-[var(--color-primary-dark)] mb-3 tracking-tight">Flexible Plans</h3>
+          <p className="text-[var(--color-text-muted)] font-black uppercase text-[10px] tracking-widest">Pick the pass that fits your schedule</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <div className="bg-white p-12 rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center text-center">
-            <h4 className="text-slate-400 font-black uppercase text-xs tracking-widest mb-4">Weekly Pass</h4>
-            <div className="flex items-baseline gap-2 mb-8">
-              <span className="text-slate-900 text-5xl font-black">100</span>
-              <span className="text-slate-400 font-bold text-xl uppercase">FCFA</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="bg-white p-10 rounded-[2rem] border border-[var(--color-border)] flex flex-col items-center text-center shadow-2xs">
+            <h4 className="text-[var(--color-text-muted)] font-black uppercase text-[10px] tracking-widest mb-4">Weekly Pass</h4>
+            <div className="flex items-baseline gap-1.5 mb-8">
+              <span className="text-[var(--color-primary-dark)] text-4xl font-black tracking-tight">100</span>
+              <span className="text-[var(--color-text-muted)] font-black text-sm uppercase">FCFA</span>
             </div>
-            <button className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all">Get Weekly Access</button>
+            <button className="w-full py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all active:scale-98" style={{ background: 'var(--color-primary-dark)' }}>
+              Get Weekly Access
+            </button>
           </div>
 
-          <div className="bg-slate-900 p-12 rounded-[3rem] text-white relative overflow-hidden shadow-2xl flex flex-col items-center text-center border-4 border-lime-400/20">
-            <div className="absolute top-0 right-0 bg-lime-400 text-slate-900 px-6 py-2 rounded-bl-3xl font-black text-[10px] uppercase tracking-widest">Best Value</div>
-            <h4 className="text-slate-400 font-black uppercase text-xs tracking-widest mb-4">Semester Pro</h4>
-            <div className="flex items-baseline gap-2 mb-8">
-              <span className="text-white text-5xl font-black">1000</span>
-              <span className="text-slate-400 font-bold text-xl uppercase">FCFA</span>
+          <div className="bg-white p-10 rounded-[2rem] border-2 border-[var(--color-primary)] flex flex-col items-center text-center relative overflow-hidden shadow-sm">
+            <div className="absolute top-0 right-0 bg-[var(--color-primary)] text-white px-4 py-1.5 rounded-bl-xl font-black text-[9px] uppercase tracking-widest">Best Value</div>
+            <h4 className="text-[var(--color-text-muted)] font-black uppercase text-[10px] tracking-widest mb-4">Semester Pro</h4>
+            <div className="flex items-baseline gap-1.5 mb-8">
+              <span className="text-[var(--color-primary-dark)] text-4xl font-black tracking-tight">1000</span>
+              <span className="text-[var(--color-text-muted)] font-black text-sm uppercase">FCFA</span>
             </div>
-            <button className="w-full bg-lime-400 text-slate-900 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.03] transition-transform">Get Semester Access</button>
+            <button className="w-full bg-[var(--color-primary)] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all active:scale-98 shadow-sm">
+              Get Semester Access
+            </button>
           </div>
         </div>
       </div>
@@ -179,24 +305,15 @@ function Pricing() {
   );
 }
 
-// ── MAIN LANDING PAGE COMPONENT ─────────────────────────────
+// ── MAIN LANDING PAGE COMPONENT ──
 export default function LandingPage() {
   return (
-    <main className="bg-white min-h-screen text-slate-900 selection:bg-lime-200">
+    <main className="bg-white min-h-screen text-[var(--color-text-main)] selection:bg-[var(--color-primary)]/20">
       <Hero />
+      <HowItWorks />
       <Features />
+      <Reviews />
       <Pricing />
-      <footer className="bg-slate-900 py-16 text-white">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-lime-400 rounded-lg flex items-center justify-center text-slate-900 font-black">V</div>
-            <span className="font-black tracking-tighter text-xl">VELOCITY</span>
-          </div>
-          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
-            © 2026 Academic Velocity. All rights reserved.
-          </p>
-        </div>
-      </footer>
     </main>
   );
 }

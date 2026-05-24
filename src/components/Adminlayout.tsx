@@ -1,73 +1,100 @@
 import React from 'react';
-import { useLocation, Link, Outlet } from 'react-router-dom'; // Added Outlet
+import { useLocation, Link, Outlet } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, Bus, Map, 
-  CalendarCheck, CircleDollarSign, Settings, Zap 
+  LayoutDashboard, 
+  Users, 
+  Bus, 
+  Map, 
+  CircleDollarSign, 
+  Settings, 
+  Zap 
 } from 'lucide-react';
 
 const navItems = [
-  { label: 'Dashboard', icon: <LayoutDashboard size={20} />, to: '/dashboard/admin' },
-  { label: 'Students', icon: <Users size={20} />, to: '/dashboard/admin/students' },
-  { label: 'Fleet Status', icon: <Bus size={20} />, to: '/admin/fleet' },
-  { label: 'Routes', icon: <Map size={20} />, to: '/admin/routes' },
-  { label: 'Bookings', icon: <CalendarCheck size={20} />, to: '/admin/bookings' },
-  { label: 'Financials', icon: <CircleDollarSign size={20} />, to: '/admin/financials' }, 
+  { label: 'Dashboard', icon: <LayoutDashboard size={18} />, to: '/dashboard/admin' },
+  { label: 'Students', icon: <Users size={18} />, to: '/dashboard/admin/students' },
+  { label: 'Driver', icon: <Bus size={18} />, to: '/dashboard/admin/drivers' },
+  { label: 'Routes', icon: <Map size={18} />, to: '/dashboard/admin/routes' },
+  { label: 'Financials', icon: <CircleDollarSign size={18} />, to: '/dashboard/admin/financials' }, 
 ];
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] flex font-sans text-slate-900">
-      {/* Sidebar - Kept exactly as you had it */}
-      <aside className="w-72 bg-slate-900 h-screen sticky top-0 hidden lg:flex flex-col p-6 text-slate-300">
+    <div className="min-h-screen bg-[var(--color-bg-soft)] flex font-sans text-[var(--color-text-main)]">
+      
+      {/* ─── SIDEBAR ARCHITECTURE ─── */}
+      <aside className="w-72 bg-white h-screen sticky top-0 hidden lg:flex flex-col p-6 border-r border-[var(--color-border)] shadow-sm">
+        
+        {/* Network Branding Header */}
         <div className="flex items-center gap-3 px-2 mb-10">
-          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white">
-            <Zap size={24} fill="currentColor" />
+          <div className="w-10 h-10 bg-[var(--color-primary)] rounded-xl flex items-center justify-center shadow-md shadow-[var(--color-primary)]/10 text-white">
+            <Zap size={20} fill="currentColor" />
           </div>
           <div>
-            <h1 className="text-white font-black text-xl tracking-tighter leading-none">VELOCITY</h1>
-            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mt-1">Admin Command</p>
+            <h1 className="text-[var(--color-primary-dark)] font-black text-xl tracking-tighter leading-none">
+              UBUS
+            </h1>
+            <p className="text-[10px] font-bold text-[var(--color-primary)] uppercase tracking-widest mt-1">
+              Admin Matrix
+            </p>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1">
+        {/* Navigation Registry Tree */}
+        <nav className="flex-1 space-y-2">
           {navItems.map((item) => {
             const isActive = location.pathname === item.to;
             return (
               <Link
                 key={item.label}
                 to={item.to}
-                className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all ${
+                className={`relative w-full flex items-center gap-4 px-4 py-3.5 font-bold text-sm transition-all group ${
                   isActive 
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' 
-                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                    ? 'text-[var(--color-primary-dark)]' 
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)]'
                 }`}
               >
-                {item.icon}
+                {/* Active Underline Asset Indicator */}
+                {isActive && (
+                  <span className="absolute bottom-0 left-4 right-4 h-[3px] bg-[var(--color-primary)] rounded-full animate-in fade-in slide-in-from-bottom-1 duration-200" />
+                )}
+
+                <span className={`transition-colors ${isActive ? 'text-[var(--color-primary)]' : 'text-[var(--color-primary)] opacity-60 group-hover:opacity-100'}`}>
+                  {item.icon}
+                </span>
                 {item.label}
               </Link>
             );
           })}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-white/10">
-          <div className="bg-white/5 p-4 rounded-[2rem] flex items-center gap-3 border border-white/5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center font-bold text-white uppercase tracking-tighter">
-              JV
+        {/* Personnel Profile Operator Node */}
+        <div className="mt-auto pt-6 border-t border-[var(--color-border)]">
+          <div className="bg-[var(--color-bg-soft)] p-4 rounded-2xl flex items-center gap-3 border border-[var(--color-border)]">
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-black text-sm tracking-tighter shadow-sm">
+              AD
             </div>
             <div className="overflow-hidden">
-              <p className="text-white font-bold text-xs truncate">Julian Vane</p>
-              <p className="text-[10px] text-slate-500 font-bold uppercase truncate">Fleet Director</p>
+              <p className="text-[var(--color-primary-dark)] font-extrabold text-xs truncate">
+                System Administrator
+              </p>
+              <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider mt-0.5 truncate">
+                Root Access
+              </p>
             </div>
-            <Settings size={16} className="ml-auto text-slate-500 cursor-pointer hover:text-white transition-colors" />
+            <Settings 
+              size={15} 
+              className="ml-auto text-[var(--color-text-muted)] cursor-pointer hover:text-[var(--color-primary-dark)] transition-colors" 
+            />
           </div>
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* ─── MAIN ROUTE CONTENT EXECUTION LAYER ─── */}
       <main className="flex-1 overflow-y-auto">
-        <Outlet /> {/* YOUR DASHBOARD CONTENT RENDERS HERE */}
+        <Outlet />
       </main>
     </div>
   );

@@ -12,6 +12,7 @@ interface UserProfile {
   role: 'student' | 'driver' | 'admin';
   phone?: string;
   student_id?: string;
+  fleetId?:string;
   license_number?: string;
 }
 

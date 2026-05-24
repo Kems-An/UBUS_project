@@ -34,10 +34,13 @@ import CommunicationsHelp from './pages/dashboard/driver/CommunicationsHelp';
 import AdminDashboard from './pages/dashboard/admin/AdminDashboard';
 import AdminLayout from './components/Adminlayout';
 import Studentsmanagement from './pages/dashboard/admin/StudentManagement';
-import HowItWorks from './pages/Howitworks';
+import ContactUs from './pages/ContactPage';
 import AboutUs from './pages/AboutUs';
 import RouteSelectionPage from './pages/dashboard/student/StudentShuttleBooking/RouteSelectionPage';
 import ShuttleSelectionPage from './pages/dashboard/student/StudentShuttleBooking/ShuttleSelectionPage';
+import DriversManagement from './pages/dashboard/admin/DriverManagement';
+import RoutesAnalytics from './pages/dashboard/admin/RouteAnalytics';
+import FinancialsManagement from './pages/dashboard/admin/FinancialsManagements';
 
 export default function App() {
   // Initialize state based on session storage to prevent the "flicker"
@@ -67,7 +70,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route path='' element={<LandingPage />} />
-              <Route path='/howitworks'  element={<HowItWorks />} />
+              <Route path='/contact'  element={<ContactUs />} />
               <Route path='/about'  element={<AboutUs />} />
             </Route>
 
@@ -106,6 +109,7 @@ export default function App() {
               }
             >
               <Route index                       element={<DriverDashboard />} />
+              <Route path="profile"               element={<DriverProfile />} />
               <Route path="routes"               element={<DriverSchedule />} />
               <Route path="booking-confirmation" element={<BookingConfirmationPage />} />
               <Route path="communicationshelp"        element={<CommunicationsHelp />} />
@@ -121,6 +125,9 @@ export default function App() {
             >
               <Route index element={<AdminDashboard />} />
               <Route path="students" element={<Studentsmanagement />} />
+              <Route path="drivers" element={<DriversManagement />} />
+              <Route path="routes" element={<RoutesAnalytics />} />
+              <Route path="financials" element={<FinancialsManagement />} />
             </Route>
           </Routes>
         </BrowserRouter>

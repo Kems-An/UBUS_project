@@ -1,68 +1,116 @@
+import { Link } from 'react-router-dom';
+
 export default function Footer() {
   return (
-    <footer className="pt-24 pb-12" style={{ background: 'var(--color-neutral-900)' }}>
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-20">
+    <footer className="pt-16 pb-12" style={{ background: 'var(--color-neutral-900)' }}>
+      <div className="max-w-7xl mx-auto px-8">
+        
+        {/* ─── UPPER TIER: HIGH-IMPACT IDENTITY & CONTACT LAYER ─── */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-6 pb-12 border-b border-neutral-800">
           
-          {/* Brand & Mission */}
-          <div className="md:col-span-5">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 rounded-full" style={{ background: 'var(--color-primary)' }} />
-              <span className="text-2xl font-bold text-white tracking-tighter">Academic Velocity</span>
+          {/* Left Block: Modern Flat Brand Identity */}
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              {/* Minimalist Flat Bus Icon */}
+              <svg 
+                className="w-7 h-7 text-[var(--color-primary)] shrink-0" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-1.1 0-2 .9-2 2v7c0 .6.4 1 1 1h1" />
+                <circle cx="7.5" cy="17.5" r="2.5" />
+                <circle cx="16.5" cy="17.5" r="2.5" />
+              </svg>
+              <h2 className="text-3xl font-black  text-white  uppercase leading-none">
+               
+              </h2>
             </div>
-            <p className="text-slate-400 text-lg max-w-sm leading-relaxed">
-              We’re redefining campus mobility with tech that puts students first. Real-time, reliable, and remarkably simple.
+            <p className="text-neutral-500 text-xs font-bold uppercase tracking-widest pl-1">
+              Intelligent Campus Transit
             </p>
           </div>
 
-          {/* Quick Nav */}
-          <div className="md:col-span-2">
-            <h4 className="text-white font-bold mb-6">Explore</h4>
-            <ul className="space-y-4 text-slate-400 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">Live Map</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Schedules</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Safety</a></li>
+          {/* Right Block: Minimalist Metadata Matrix */}
+          <div className="text-left sm:text-right font-sans">
+            <p className="text-xl font-black tracking-tight text-white mb-1">
+              +1 234 567 89 00
+            </p>
+            <p className="text-sm font-bold text-neutral-400 hover:text-[var(--color-primary)] transition-colors cursor-pointer">
+              support@ubus.com
+            </p>
+          </div>
+        </div>
+
+        {/* ─── LOWER TIER: 4-COLUMN CONTENT DIRECTORY ─── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 py-16">
+          
+          {/* Column 1: About Platform Summary */}
+          <div>
+            <h4 className="text-white text-sm font-extrabold tracking-tight mb-4">About Us</h4>
+            <p className="text-neutral-400 text-xs leading-relaxed max-w-xs">
+              UBUS is a centralized smart transit ecosystem designed to optimize, monitor, and streamline daily commuter routes for students, operators, and administration.
+            </p>
+          </div>
+
+          {/* Column 2: Operational Schedule Data */}
+          <div>
+            <h4 className="text-white text-sm font-extrabold tracking-tight mb-4">Operational Hours</h4>
+            <ul className="space-y-2 text-neutral-400 text-xs font-medium">
+              <li className="flex justify-between max-w-[200px]"><span>Monday - Friday</span> <span className="text-white font-bold">6am – 10pm</span></li>
+              <li className="flex justify-between max-w-[200px]"><span>Saturday</span> <span className="text-white font-bold">8am – 6pm</span></li>
+              <li className="flex justify-between max-w-[200px]"><span>Sunday</span> <span className="text-neutral-500 uppercase tracking-wider text-[10px] font-black">Fleet Standby</span></li>
             </ul>
           </div>
 
-          {/* Support */}
-          <div className="md:col-span-2">
-            <h4 className="text-white font-bold mb-6">Support</h4>
-            <ul className="space-y-4 text-slate-400 text-sm">
-              <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Feedback</a></li>
-            </ul>
+          {/* Column 3: Regional Terminal Address */}
+          <div>
+            <h4 className="text-white text-sm font-extrabold tracking-tight mb-4">Central Depot</h4>
+            <address className="text-neutral-400 text-xs not-italic leading-relaxed">
+              Transit Operations Complex Suite 402<br />
+              University Science Park Way<br />
+              Campus Sector Alpha
+            </address>
           </div>
 
-          {/* Social Icons */}
-          <div className="md:col-span-3">
-            <h4 className="text-white font-bold mb-6">Join the Community</h4>
-            <div className="flex gap-4">
-              {['𝕏', '📸', '🎧'].map((icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="w-12 h-12 rounded-full border border-slate-700 flex items-center justify-center text-xl hover:bg-slate-800 hover:border-slate-500 transition-all"
-                >
-                  {icon}
+          {/* Column 4: Relational Route Gateways */}
+          <div>
+            <h4 className="text-white text-sm font-extrabold tracking-tight mb-4">Follow Us</h4>
+            <ul className="space-y-2 text-xs font-bold">
+              <li>
+                <a href="#" className="text-neutral-400 hover:text-white transition-colors duration-200 block">
+                  Digital Matrix Logs
                 </a>
-              ))}
-            </div>
+              </li>
+              <li>
+                <a href="#" className="text-neutral-400 hover:text-white transition-colors duration-200 block">
+                  Internal Fleet Updates
+                </a>
+              </li>
+              <li>
+                <a href="#" className="text-neutral-400 hover:text-white transition-colors duration-200 block">
+                  System Status Network
+                </a>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        {/* ─── BASEBOARD: COPYRIGHT & COMPLIANCE RULES ─── */}
+        <div className="pt-8 border-t border-neutral-800/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-neutral-600 text-xs font-medium">
+            &copy; {new Date().getFullYear()} UBUS Platform. All operations monitored securely.
+          </p>
+          <div className="flex gap-6 text-xs font-bold">
+            <Link to="/privacy" className="text-neutral-500 hover:text-neutral-400 transition-colors">Privacy</Link>
+            <Link to="/terms" className="text-neutral-500 hover:text-neutral-400 transition-colors">Terms</Link>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-slate-500 text-xs">
-            © {new Date().getFullYear()} Academic Velocity. Built for the next generation of students.
-          </p>
-          <div className="flex gap-8 text-xs text-slate-500">
-            <a href="#" className="hover:text-slate-300">Privacy Policy</a>
-            <a href="#" className="hover:text-slate-300">Terms of Service</a>
-          </div>
-        </div>
       </div>
     </footer>
   );
