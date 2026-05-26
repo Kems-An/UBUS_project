@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion, type HTMLMotionProps } from 'framer-motion';
-import { GraduationCap, Bus, ShieldAlert, ArrowRight } from 'lucide-react';
+import { GraduationCap, Bus, ArrowRight } from 'lucide-react';
 import logo from "../../assets/images/logo.png"
 
 const roles = [
@@ -24,16 +24,6 @@ const roles = [
     badge: 'Background Check',
     buttonLabel: 'Apply as Driver',
   },
-  {
-    id: 'admin',
-    icon: <ShieldAlert size={24} className="text-purple-600" />,
-    iconBg: 'bg-purple-50 border-purple-100',
-    title: 'Admin Infrastructure',
-    desc: 'Restricted access framework exclusively for university transit coordinators and IT staff. Oversee fleet telemetry routing.',
-    link: '/register/admin',
-    badge: 'Staff Only',
-    buttonLabel: 'Request System Access',
-  },
 ];
 
 export default function RegisterRolePage() {
@@ -43,7 +33,7 @@ export default function RegisterRolePage() {
     transition: { duration: 0.5, ease: "easeOut" }
   };
 
-   const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-[var(--color-text-main)] selection:bg-[var(--color-primary)]/20 overflow-x-hidden">
@@ -84,8 +74,8 @@ export default function RegisterRolePage() {
           </p>
         </motion.div>
 
-        {/* Roles Distribution Matrix */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
+        {/* Roles Distribution Matrix - Centralized layout for 2 elements */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl mx-auto justify-center">
           {roles.map((role, i) => (
             <motion.div
               key={role.id}
@@ -95,7 +85,7 @@ export default function RegisterRolePage() {
               className="bg-white p-8 rounded-[2rem] border border-[var(--color-border)] flex flex-col justify-between shadow-2xs hover:border-[var(--color-primary)] transition-all duration-300 group"
             >
               <div>
-                <div className="flex justify-between items-start mb-6">
+                <div className="flex justify-between items-start mb-6 ">
                   {/* Distinct high-end container tokens prevent monochromatic green dominance */}
                   <div className={`w-12 h-12 rounded-xl border flex items-center justify-center transition-transform duration-300 group-hover:scale-105 ${role.iconBg}`}>
                     {role.icon}

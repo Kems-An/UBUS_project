@@ -3,7 +3,8 @@ import { Search, Navigation, MapPin, ArrowRight, Circle, LocateFixed } from 'luc
 import { useNavigate } from 'react-router-dom';
 import {
   GoogleMap,
-  DirectionsRenderer,
+  Polyline,
+  Marker,
   useJsApiLoader,
 } from '@react-google-maps/api';
 
@@ -12,8 +13,12 @@ export default function RouteSelectionPage() {
 
   const [departure, setDeparture] = useState('');
   const [destination, setDestination] = useState('');
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [routeReady, setRouteReady] = useState(false);
+
+  // simulated route path
+  const [routePath, setRoutePath] = useState<
+    { lat: number; lng: number }[]
+  >([]);
 
   {/*function to calculate the route direction*/}
   const calculateRoute = async () => {
@@ -22,24 +27,19 @@ export default function RouteSelectionPage() {
       return;
     }
 
-    try {
-      const directionsService = new google.maps.DirectionsService();
+    // Simulated shuttle route around University of Buea
+    const fakeRoute = [
+      { lat: 4.1549, lng: 9.2884 },
+      { lat: 4.1560, lng: 9.2900 },
+      { lat: 4.1580, lng: 9.2920 },
+      { lat: 4.1605, lng: 9.2945 },
+      { lat: 4.1630, lng: 9.2970 },
+    ];
 
-      const results = await directionsService.route({
-        origin: departure,
-        destination: destination,
-        travelMode: google.maps.TravelMode.DRIVING,
-      });
+    setRoutePath(fakeRoute);
 
-      setDirections(results);
-
-      // route now available
-      setRouteReady(true);
-
-    } catch (error) {
-      console.error(error);
-      alert('Could not calculate route');
-    }
+    // enable continue button
+    setRouteReady(true);
   };
 
   {/*setting the google API*/}
@@ -190,9 +190,33 @@ export default function RouteSelectionPage() {
               }}
               zoom={14}
             >
-              {directions && (
-                <DirectionsRenderer directions={directions} />
+
+              {/* Departure Marker */}
+              {departure && (
+                <Marker
+                  position={{ lat: 4.1549, lng: 9.2884 }}
+                />
               )}
+
+              {/* Destination Marker */}
+              {destination && (
+                <Marker
+                  position={{ lat: 4.1630, lng: 9.2970 }}
+                />
+              )}
+
+              {/* Simulated Shuttle Route */}
+              {routePath.length > 0 && (
+                <Polyline
+                  path={routePath}
+                  options={{
+                    strokeColor: '#0066FF',
+                    strokeOpacity: 1,
+                    strokeWeight: 5,
+                  }}
+                />
+              )}
+
             </GoogleMap>
 
             {/* Overlay Controls */}

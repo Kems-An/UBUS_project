@@ -14,7 +14,6 @@ import LoginPage             from './pages/login/LoginPage';
 import RegisterRolePage      from './pages/register/RegisterRolePage';
 import StudentRegisterPage  from './pages/register/StudentRegisterPage';
 import DriverRegisterPage   from './pages/register/DriverRegisterPage';
-import AdminRegisterPage    from './pages/register/AdminRegisterPage';
 import StudentLayout from './components/StudentLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import StudentDashboard from './pages/dashboard/student/StudentDashboard';
@@ -41,6 +40,8 @@ import ShuttleSelectionPage from './pages/dashboard/student/StudentShuttleBookin
 import DriversManagement from './pages/dashboard/admin/DriverManagement';
 import RoutesAnalytics from './pages/dashboard/admin/RouteAnalytics';
 import FinancialsManagement from './pages/dashboard/admin/FinancialsManagements';
+import AdminLoginPage from './pages/login/AdminLoginPage';
+import TicketPage from './pages/dashboard/student/StudentShuttleBooking/TicketPage';
 
 export default function App() {
   // Initialize state based on session storage to prevent the "flicker"
@@ -78,7 +79,8 @@ export default function App() {
             <Route path="/register"          element={<RegisterRolePage />} />
             <Route path="/register/student"  element={<StudentRegisterPage />} />
             <Route path="/register/driver"   element={<DriverRegisterPage />} />
-            <Route path="/register/admin"    element={<AdminRegisterPage />} />
+            <Route path="/adminonly" element={<AdminLoginPage />} />
+            
 
             <Route
               path="/dashboard/student"
@@ -95,6 +97,7 @@ export default function App() {
               <Route path="shuttle-selection"       element={<ShuttleSelectionPage />} />
               <Route path="payment"              element={<PaymentPage />} />
               <Route path="booking-confirmation" element={<BookingConfirmationPage />} />
+              <Route path="ticket" element={<TicketPage />} />
       
               <Route path="profile"              element={<StudentProfilePage />} />
               <Route path="Bookings"              element={<StudentBookingsPage />} />

@@ -8,7 +8,6 @@ import {
   GraduationCap, 
   Bus, 
   ShieldCheck,
-  Zap,
   Activity,
   Fingerprint
 } from 'lucide-react';
@@ -19,11 +18,10 @@ import { saveSession } from '../../context/AuthContext';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Updated roles with React Icons instead of emojis
+// Admin removed — only Student and Driver visible to public
 const roles = [
   { id: 'student', label: 'Student', icon: GraduationCap },
   { id: 'driver', label: 'Driver', icon: Bus },
-  { id: 'admin', label: 'Admin', icon: ShieldCheck },
 ];
 
 export default function LoginPage() {
@@ -40,6 +38,7 @@ export default function LoginPage() {
     setLoading(true);
     setStatus({ type: 'info', msg: 'System: Initializing Handshake...' });
 
+    
     try {
       const authRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: 'POST',
@@ -65,6 +64,7 @@ export default function LoginPage() {
       const userId = authData.user?.id;
       const expiresAt = authData.expires_at;
 
+      
       setStatus({ type: 'info', msg: 'System: Fetching Profile Data...' });
 
       const profileRes = await fetch(
@@ -93,7 +93,6 @@ export default function LoginPage() {
       setTimeout(() => {
         if (profile.role === 'student') window.location.href = '/dashboard/student';
         else if (profile.role === 'driver') window.location.href = '/dashboard/driver';
-        else if (profile.role === 'admin') window.location.href = '/dashboard/admin';
         else setStatus({ type: 'error', msg: 'Protocol Error: Unknown Role' });
       }, 1000);
 
@@ -166,7 +165,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Role Selector with Icons */}
+            {/* Role Selector — Student and Driver only */}
             <div className="flex p-1.5 bg-slate-100 rounded-2xl mb-8">
               {roles.map((role) => {
                 const Icon = role.icon;
