@@ -4,6 +4,13 @@ import caroussel1 from "../assets/images/caroussel1.jpeg";
 import caroussel2 from "../assets/images/caroussel2.jpeg";
 import hero from "../assets/images/hero.png";
 
+// Placeholder setup for your new section's images—adjust paths as needed
+import mola1 from "../assets/images/mola1.jpg"; 
+import mola2 from "../assets/images/mola2.jpg";
+import mola3 from "../assets/images/mola3.jpg";
+
+const images = { mola1, mola2, mola3 };
+
 import { 
   MapPinned, 
   Cpu, 
@@ -115,7 +122,7 @@ function Hero() {
   );
 }
 
-// ── HOW IT WORKS SECTION (WITH COLORFUL BG TINTS FOR ICONS) ──
+// ── HOW IT WORKS SECTION (UNTOUCHED) ──
 function HowItWorks() {
   const steps = [
     { 
@@ -155,7 +162,6 @@ function HowItWorks() {
             <div key={i} className="relative bg-white border border-[var(--color-border)] rounded-[2rem] p-8 flex flex-col justify-between shadow-2xs group hover:border-[var(--color-primary)] transition-colors duration-300">
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  {/* Dynamic Color Backgrounds for distinct visual structure */}
                   <div className={`w-12 h-12 border rounded-xl flex items-center justify-center ${step.iconBg}`}>
                     {step.icon}
                   </div>
@@ -173,7 +179,7 @@ function HowItWorks() {
   );
 }
 
-// ── SERVICES / FEATURES SECTION (WITH DIVERSE TECH-ACCENT COLOR MATRICES) ──
+// ── SERVICES / FEATURES SECTION (UNTOUCHED) ──
 function Features() {
   const features = [
     { title: "Real-time Tracking", desc: "Live GPS updates for every shuttle on campus. Know exactly where your ride is.", icon: <MapPinned size={22} className="text-indigo-600" />, bg: "bg-indigo-50/70 border-indigo-100" },
@@ -195,13 +201,67 @@ function Features() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {features.map((f, i) => (
             <div key={i} className="bg-white p-8 rounded-[2rem] border border-[var(--color-border)] hover:shadow-md transition-all group">
-              {/* Vibrant individual wrapper frames break down monochromatic green themes */}
               <div className={`mb-5 p-3.5 border inline-block rounded-xl ${f.bg}`}>{f.icon}</div>
               <h4 className="text-base font-black text-[var(--color-primary-dark)] mb-2">{f.title}</h4>
               <p className="text-[var(--color-text-muted)] text-xs leading-relaxed font-semibold">{f.desc}</p>
             </div>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ── NEW SECTION: WHY CHOOSE US ──
+function WhyChooseUs() {
+  return (
+    <section className="bg-white pb-28">
+      <div className="max-w-7xl mx-auto px-6">
+        <h1 className="flex justify-center items-center font-bold text-3xl sm:text-4xl md:text-6xl text-[var(--color-primary-dark)]">
+          Why choose us
+        </h1>
+        <motion.div
+          className="flex flex-col lg:flex-row justify-between lg:items-start gap-5 md:gap-10 mt-16"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: false, amount: 0.3 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+        >
+          {/* Text */}
+          <div className="flex flex-col gap-5 mt-10 lg:mt-32 text-center lg:text-left">
+            <p className="text-xl sm:text-5xl text-[var(--color-primary)] font-bold">
+              We Got you Covered
+            </p>
+            <p className="text-xl sm:text-4xl text-[var(--color-text-main)] font-bold">
+              Active 24/7
+            </p>
+          </div>
+
+          {/* Rounded Images */}
+          <div className="flex flex-col sm:flex-row lg:flex-row gap-5 items-center lg:items-start w-full lg:w-auto justify-center">
+            <div className="w-40 sm:w-50 h-40 sm:h-96 overflow-hidden rounded-full border border-[var(--color-border)] shadow-2xs">
+              <img
+                src={images.mola1}
+                alt="Commuters Asset 1"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="w-40 sm:w-50 h-40 sm:h-80 overflow-hidden rounded-full border border-[var(--color-border)] shadow-2xs mt-5 sm:mt-20">
+              <img
+                src={images.mola2}
+                alt="Commuters Asset 2"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="w-40 sm:w-50 h-40 sm:h-96 overflow-hidden rounded-full border border-[var(--color-border)] shadow-2xs">
+              <img
+                src={images.mola3}
+                alt="Commuters Asset 3"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -312,6 +372,8 @@ export default function LandingPage() {
       <Hero />
       <HowItWorks />
       <Features />
+      {/* Mounted perfectly here between Services and Reviews */}
+      <WhyChooseUs />
       <Reviews />
       <Pricing />
     </main>

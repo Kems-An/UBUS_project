@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Zap, Eye, EyeOff, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
+// REPLACE THIS PATH WITH YOUR ACTUAL UNDRAW SVG IMAGE FILE
+import studentIllustration from "../../assets/images/studentillu.png"; 
+
 // Creating a FRESH supabase client here to avoid session conflicts
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -110,34 +113,60 @@ export default function StudentRegisterPage() {
         </div>
       )}
 
-      <div className="w-full max-w-4xl grid md:grid-cols-2 bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-slate-100">
+      <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 p-4 gap-4">
         
-        {/* Left Side: Branding */}
-        <div className="p-8 md:p-10 bg-gradient-to-b from-lime-500 to-lime-600 flex flex-col relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-2xl" />
-          <h2 className="text-4xl font-black text-slate-900 mb-4 leading-tight tracking-tighter">Ride with <br/> Velocity.</h2>
-          <p className="text-slate-800 font-bold text-base mb-8 max-w-[240px]">The smarter way to move across campus.</p>
+        {/* Left Side: Modern Premium Branding Panel (Inspired by Uploaded Image) */}
+        <div className="bg-[#f8fafc] rounded-[2rem] border border-slate-200/60 p-8 md:p-10 flex flex-col justify-between relative overflow-hidden group min-h-[500px]">
+          {/* Subtle Grid Background Effect */}
+          <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]" />
           
-          <div className="space-y-4 mt-auto">
-            <div className="bg-white/20 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/20">
-              <div className="flex items-center gap-2 mb-1 font-black text-slate-900 text-sm italic">
-                <Zap size={16} /> Priority Transit
+          {/* Top Info & Decorative Header Elements */}
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-xs">
+                <Zap size={14} className="text-lime-500 fill-lime-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-700">Priority Transit</span>
               </div>
-              <p className="text-xs text-slate-800 font-medium leading-relaxed">Instant access to live tracking and reservations.</p>
-            </div>
-            
-            <div className="bg-slate-900 text-white p-4 rounded-[1.5rem] shadow-lg">
-              <div className="flex items-center justify-between mb-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-lime-400">Network Status</p>
-                <div className="w-1.5 h-1.5 bg-lime-400 rounded-full animate-pulse" />
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-lime-500 animate-pulse" />
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Live Workspace</span>
               </div>
-              <h4 className="font-bold text-base italic tracking-tight">Active Campus</h4>
             </div>
+
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tighter">
+              Ride with <br/> Velocity.
+            </h2>
+            <p className="text-slate-400 font-medium text-xs mt-2 max-w-[260px]">
+              The smarter, high-performance transit layout configured for your daily campus commute operations.
+            </p>
+          </div>
+
+          {/* Core Image Container: Drop your undraw illustration seamlessly here */}
+          <div className="my-auto py-6 flex items-center justify-center relative z-10 w-full max-w-[280px] mx-auto mix-blend-multiply drop-shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
+            <img 
+              src={studentIllustration} 
+              alt="Student Commuter Workspace Illustration" 
+              className="w-full h-auto object-contain max-h-[220px]"
+            />
+          </div>
+
+          {/* Bottom Card / Network Status Widget */}
+          <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-xl border border-slate-800 relative z-10 transition-all duration-300 group-hover:border-lime-500/30">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[9px] font-black uppercase tracking-widest text-lime-400">Ecosystem Network Status</p>
+              <div className="px-2 py-0.5 rounded-md bg-lime-500/10 border border-lime-500/20 text-[9px] font-extrabold text-lime-400 uppercase tracking-wider">
+                Active
+              </div>
+            </div>
+            <h4 className="font-bold text-sm tracking-tight text-slate-100">Automated Shuttle Dispatch Matrix</h4>
+            <p className="text-[11px] text-slate-400 font-medium leading-normal mt-1">
+              Isolated user sessions provide instantaneous real-time sync with network-wide bus tracking coordinates.
+            </p>
           </div>
         </div>
 
-        {/* Right Side: Form */}
-        <div className="p-8 md:p-10 lg:p-12 flex flex-col justify-center">
+        {/* Right Side: Form (Untouched functionality & styles) */}
+        <div className="p-4 md:p-6 lg:p-8 flex flex-col justify-center">
           <div className="mb-6 text-center md:text-left">
             <h3 className="text-2xl font-black text-slate-900 tracking-tight underline decoration-lime-500 decoration-4 underline-offset-4">Create Account</h3>
             <p className="text-slate-400 font-bold text-[11px] mt-2 uppercase tracking-widest">Student Verification</p>

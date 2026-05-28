@@ -42,7 +42,7 @@ import RoutesAnalytics from './pages/dashboard/admin/RouteAnalytics';
 import FinancialsManagement from './pages/dashboard/admin/FinancialsManagements';
 import AdminLoginPage from './pages/login/AdminLoginPage';
 import TicketPage from './pages/dashboard/student/StudentShuttleBooking/TicketPage';
-
+import QRScannerPage from './pages/dashboard/driver/QRscannerPage';
 export default function App() {
   // Initialize state based on session storage to prevent the "flicker"
   const [isLoading, setIsLoading] = useState(() => {
@@ -115,6 +115,7 @@ export default function App() {
               <Route path="profile"               element={<DriverProfile />} />
               <Route path="routes"               element={<DriverSchedule />} />
               <Route path="booking-confirmation" element={<BookingConfirmationPage />} />
+              <Route path="scan"                 element={<QRScannerPage />} />
               <Route path="communicationshelp"        element={<CommunicationsHelp />} />
             </Route>
 

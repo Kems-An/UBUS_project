@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   LayoutDashboard, 
@@ -7,9 +6,6 @@ import {
   Ticket, 
   UserCircle, 
   LogOut,
-  Search,
-  Menu,
-  X,
   ShieldCheck
 } from 'lucide-react';
 
@@ -23,148 +19,107 @@ const NAV_ITEMS = [
 export default function StudentLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   
-  // ─── State for Mobile Menu ───
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const currentTitle = NAV_ITEMS.find(item => item.to === location.pathname)?.label || 'Overview';
-
   function handleLogout() { 
     logout();
     navigate('/login');
   }
 
-  const closeMenu = () => setIsMobileMenuOpen(false);
-
   return (
     <div className="flex min-h-screen bg-[var(--color-bg-soft)] font-sans text-[var(--color-text-main)]">
       
-      {/* ─── Mobile Overlay (Backdrop) ─── */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-[var(--color-primary-dark)]/20 backdrop-blur-xs z-[45] lg:hidden"
-          onClick={closeMenu}
-        />
-      )}
-
-      {/* ─── Sidebar (Refactored to match full screen layout architecture) ─── */}
-      <aside className={`
-        w-72 fixed top-0 left-0 h-screen bg-white border-r border-[var(--color-border)] shadow-sm z-50 transition-transform duration-300 ease-in-out flex flex-col p-6
-        lg:translate-x-0 lg:sticky
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      {/* ── Sidebar ── */}
+      <aside className="w-72 bg-white h-screen sticky top-0 z-40 hidden lg:flex flex-col p-6 border-r border-[var(--color-border)] shadow-sm">
         
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-2 mb-10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white shadow-sm">
-              <Bus size={20} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h1 className="text-xl font-black tracking-tight text-[var(--color-primary-dark)] leading-none">UBUS</h1>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-primary)] mt-1.5 block">Route Made Easy</span>
-            </div>
+        <div className="flex items-center gap-3 px-2 mb-10">
+          <div className="w-10 h-10 rounded-xl bg-[var(--color-primary)] flex items-center justify-center text-white shadow-sm">
+            <Bus size={20} strokeWidth={2.5} />
           </div>
-          {/* Close button for mobile */}
-          <button onClick={closeMenu} className="lg:hidden p-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)]">
-            <X size={18} />
-          </button>
+          <div>
+            <h1 className="text-xl font-black tracking-tight text-[var(--color-primary-dark)] leading-none">UBUS</h1>
+            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5">Route Made Easy</p>
+          </div>
         </div>
 
-        {/* Navigation Links with Light Modern Underline Indicators */}
-        <nav className="flex-1 space-y-4 pt-4 overflow-y-auto">
-          {NAV_ITEMS.map(({ label, icon, to }) => (
+        {/* Nav Items */}
+        <nav className="flex-1 space-y-1">
+          {NAV_ITEMS.map((item) => (
             <NavLink
-              key={label}
-              to={to}
-              onClick={closeMenu}
-              end={to === '/dashboard/student'}
-              className={({ isActive }) => `
-                group relative flex items-center gap-3 py-2 text-sm font-bold tracking-tight transition-colors duration-300
-                ${isActive 
-                  ? 'text-[var(--color-primary-dark)]' 
-                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)]'}
-              `}
+              key={item.to}
+              to={item.to}
+              end={item.to === '/dashboard/student'}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+                  isActive
+                    ? 'bg-[var(--color-primary-dark)] text-white shadow-sm'
+                    : 'text-[var(--color-text-muted)] hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-primary-dark)]'
+                }`
+              }
             >
-              {({ isActive }) => (
-                <>
-                  <span className="transition-transform duration-300 group-hover:scale-105 shrink-0 text-current">
-                    {icon}
-                  </span>
-                  <span className="relative py-1">
-                    {label}
-                    {/* Premium Underline Indicator */}
-                    <span 
-                      className={`absolute bottom-0 left-0 h-[2px] bg-[var(--color-primary)] transition-all duration-300 ease-out
-                        ${isActive 
-                          ? 'w-full opacity-100' 
-                          : 'w-0 opacity-0 group-hover:w-full group-hover:opacity-100'
-                        }`} 
-                    />
-                  </span>
-                </>
-              )}
+              {item.icon}
+              {item.label}
             </NavLink>
           ))}
         </nav>
 
-        {/* User Profile Card Footer */}
-        <div className="mt-auto pt-6 border-t border-[var(--color-border)]">
-          <div className="bg-[var(--color-bg-soft)] rounded-2xl p-5 border border-[var(--color-border)]">
-            <div className="flex items-center gap-3 mb-5 min-w-0">
-              <div className="w-10 h-10 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white font-black ring-4 ring-white shadow-xs shrink-0">
-                {user?.full_name?.charAt(0) || 'S'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-black text-[var(--color-primary-dark)] truncate">
-                  {user?.full_name || 'Student Profile'}
-                </p>
-                <div className="flex items-center gap-1 mt-0.5">
-                  <ShieldCheck size={12} className="text-[var(--color-primary)] shrink-0" />
-                  <p className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-tight">Verified Student</p>
-                </div>
+        {/* User Info + Logout */}
+        <div className="border-t border-[var(--color-border)] pt-4 mt-4">
+          <div className="flex items-center gap-3 px-2 mb-4">
+            <div className="w-9 h-9 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center text-sm font-black">
+              {user?.full_name?.charAt(0).toUpperCase() ?? 'S'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-black text-[var(--color-primary-dark)] truncate">{user?.full_name ?? 'Student Profile'}</p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <ShieldCheck size={12} className="text-[var(--color-primary)] shrink-0" />
+                <p className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-tight">Verified Student</p>
               </div>
             </div>
-            
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 py-3 text-xs font-black rounded-xl bg-white border border-[var(--color-border)] text-[var(--color-primary-dark)] hover:bg-[var(--color-bg-soft)] transition-all active:scale-98 shadow-2xs"
-            >
-              <LogOut size={14} strokeWidth={2.5} /> Sign Out
-            </button>
           </div>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-[var(--color-text-muted)] hover:bg-rose-50 hover:text-rose-600 transition-all"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
         </div>
       </aside>
 
-      {/* ─── Main Content Area ─── */}
-      <main className="flex-1 min-h-screen flex flex-col min-w-0 w-full">
-        
-        <header className="h-20 flex items-center justify-between px-4 sm:px-6 md:px-10 sticky top-0 bg-[var(--color-bg-soft)]/80 backdrop-blur-md z-30 border-b border-[var(--color-border)]/40">
-          <div className="flex items-center gap-4">
-            {/* Hamburger Trigger for Mobile */}
-            <button 
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2.5 bg-white border border-[var(--color-border)] rounded-xl shadow-2xs text-[var(--color-primary-dark)] active:scale-95 transition-transform"
-            >
-              <Menu size={18} />
-            </button>
-            <h2 className="text-xs font-black text-[var(--color-text-muted)] uppercase tracking-[0.2em]">{currentTitle}</h2>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white border border-[var(--color-border)] rounded-full shadow-2xs mr-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
-              <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">System Live</span>
-            </div>
-            <button className="w-9 h-9 rounded-full bg-white border border-[var(--color-border)] flex items-center justify-center shadow-2xs hover:bg-[var(--color-bg-soft)] transition-colors">
-              <Search size={16} className="text-[var(--color-text-muted)]" />
-            </button>
-          </div>
-        </header>
+      {/* ── Mobile Bottom Bar ── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[var(--color-border)] flex justify-around items-center py-2 px-2">
+        {NAV_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.to === '/dashboard/student'}
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-[9px] font-black min-w-[60px] text-center ${
+                isActive
+                  ? 'text-[var(--color-primary-dark)]'
+                  : 'text-[var(--color-text-muted)]'
+              }`
+            }
+          >
+            {item.icon}
+            <span className="truncate max-w-full">{item.label}</span>
+          </NavLink>
+        ))}
+        {/* Mobile Sign Out Action trigger */}
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-[9px] font-black min-w-[60px] text-center text-rose-600 active:scale-95"
+        >
+          <LogOut size={18} />
+          <span>Sign Out</span>
+        </button>
+      </div>
 
+      {/* ── Main Content ── */}
+      <main className="flex-1 overflow-auto pb-24 lg:pb-0">
         <div className="px-4 sm:px-6 md:px-10 py-10 w-full max-w-7xl mx-auto flex-1">
-            <Outlet />
+          <Outlet />
         </div>
       </main>
     </div>

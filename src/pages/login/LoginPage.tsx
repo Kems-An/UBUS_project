@@ -9,25 +9,37 @@ import {
   Bus, 
   ShieldCheck,
   Activity,
-  Fingerprint
+  Fingerprint,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import logo from "../../assets/images/logo.png";
 import campusImg from "../../assets/images/rounded1.jpg";
+// Assuming you have images for driver and admin role contexts
+import driverImg from "../../assets/images/driver.png"; 
+import adminImg from "../../assets/images/rounded2.jpg"; 
 import { saveSession } from '../../context/AuthContext';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Admin removed — only Student and Driver visible to public
 const roles = [
   { id: 'student', label: 'Student', icon: GraduationCap },
   { id: 'driver', label: 'Driver', icon: Bus },
 ];
 
+// Image asset assignment dictionary mapping each structural role
+const roleImages: Record<string, string> = {
+  student: campusImg,
+  driver: driverImg,
+  admin: adminImg,
+};
+
 export default function LoginPage() {
   const [selectedRole, setSelectedRole] = useState('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | 'info' | null, msg: string }>({
     type: null, msg: ''
@@ -36,9 +48,8 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setStatus({ type: 'info', msg: 'System: Initializing Handshake...' });
+    setStatus({ type: null, msg: '' }); // Clear any previous statuses quietly
 
-    
     try {
       const authRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
         method: 'POST',
@@ -63,9 +74,6 @@ export default function LoginPage() {
       const accessToken = authData.access_token;
       const userId = authData.user?.id;
       const expiresAt = authData.expires_at;
-
-      
-      setStatus({ type: 'info', msg: 'System: Fetching Profile Data...' });
 
       const profileRes = await fetch(
         `${SUPABASE_URL}/rest/v1/users?auth_id=eq.${userId}&select=*`,
@@ -93,6 +101,7 @@ export default function LoginPage() {
       setTimeout(() => {
         if (profile.role === 'student') window.location.href = '/dashboard/student';
         else if (profile.role === 'driver') window.location.href = '/dashboard/driver';
+        else if (profile.role === 'admin') window.location.href = '/dashboard/admin';
         else setStatus({ type: 'error', msg: 'Protocol Error: Unknown Role' });
       }, 1000);
 
@@ -135,9 +144,18 @@ export default function LoginPage() {
       <main className="flex-1 flex items-center justify-center pt-24 p-6">
         <div className="w-full max-w-6xl grid md:grid-cols-2 bg-white rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200 border border-slate-100">
           
-          {/* ─── LEFT SIDE: BRANDING ─── */}
+          {/* ─── LEFT SIDE: BRANDING (With Cross-fading Image Matrix) ─── */}
           <div className="hidden md:block relative p-16 overflow-hidden bg-slate-900">
-            <img src={campusImg} className="absolute inset-0 w-full h-full object-cover opacity-50 scale-105" alt="Campus" />
+            {Object.entries(roleImages).map(([roleKey, imgSource]) => (
+              <img
+                key={roleKey}
+                src={imgSource}
+                className={`absolute inset-0 w-full h-full object-cover scale-105 transition-opacity duration-700 ease-in-out ${
+                  selectedRole === roleKey ? 'opacity-50' : 'opacity-0 pointer-events-none'
+                }`}
+                alt={`${roleKey} setup visualization`}
+              />
+            ))}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 via-slate-900/40 to-transparent" />
             
             <div className="relative z-10 h-full flex flex-col justify-end">
@@ -145,7 +163,7 @@ export default function LoginPage() {
                 <div className="bg-lime-400 w-12 h-1.5 rounded-full" />
                 <Activity size={20} className="text-lime-400 animate-pulse" />
               </div>
-              <h1 className="text-5xl font-black text-white mb-6 tracking-tighter leading-[1.1]">
+              <h1 className="text-5xl font-black text-[fff] !text-white mb-6 tracking-tighter leading-[1.1]">
                 Your campus,<br/>synchronized.
               </h1>
               <p className="text-slate-300 text-lg max-w-sm font-medium leading-relaxed italic">
@@ -165,13 +183,14 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Role Selector — Student and Driver only */}
+            {/* Role Selector */}
             <div className="flex p-1.5 bg-slate-100 rounded-2xl mb-8">
               {roles.map((role) => {
                 const Icon = role.icon;
                 return (
                   <button
                     key={role.id}
+                    type="button"
                     onClick={() => setSelectedRole(role.id)}
                     className={`flex-1 py-3 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 ${
                       selectedRole === role.id 
@@ -210,15 +229,22 @@ export default function LoginPage() {
                   </label>
                   <Link to="/forgot" className="text-[9px] font-black text-lime-600 hover:text-lime-700 uppercase tracking-widest">Forgot?</Link>
                 </div>
-                <div className="relative group">
+                <div className="relative group flex items-center">
                   <input 
-                    type="password" 
+                    type={showPassword ? "text" : "password"} 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all font-medium text-sm"
+                    className="w-full px-5 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all font-medium text-sm"
                     placeholder="••••••••"
                     required
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
               </div>
 
