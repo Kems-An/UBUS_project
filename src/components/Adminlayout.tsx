@@ -92,8 +92,31 @@ const AdminLayout: React.FC = () => {
         </div>
       </aside>
 
+      {/* ─── MOBILE BOTTOM BAR ─── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[var(--color-border)] flex justify-around items-center py-2 px-2">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.to;
+          return (
+            <Link
+              key={item.label}
+              to={item.to}
+              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-[9px] font-black min-w-[60px] text-center ${
+                isActive
+                  ? 'text-[var(--color-primary-dark)]'
+                  : 'text-[var(--color-text-muted)]'
+              }`}
+            >
+              <span className={`transition-colors ${isActive ? 'text-[var(--color-primary-dark)]' : 'text-[var(--color-text-muted)] opacity-60'}`}>
+                {item.icon}
+              </span>
+              <span className="truncate max-w-full">{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+
       {/* ─── MAIN ROUTE CONTENT EXECUTION LAYER ─── */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-24 lg:pb-0">
         <Outlet />
       </main>
     </div>

@@ -10,7 +10,6 @@ import {
   Edit3, 
   Trash2, 
   Filter,
-  ShieldAlert,
   ArrowUpRight,
   ChevronRight,
   MapPin

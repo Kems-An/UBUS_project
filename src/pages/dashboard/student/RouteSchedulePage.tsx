@@ -4,14 +4,9 @@ import {
   Search, 
   Bus, 
   ChevronDown, 
-  Clock, 
+ 
   MapPin, 
-  Users, 
-  ArrowRight,
-  Filter,
-  AlertCircle,
-  CheckCircle2,
-  XCircle
+  
 } from 'lucide-react';
 
 type RouteStatus = 'On Time' | 'Delayed' | 'Full' | 'Cancelled';

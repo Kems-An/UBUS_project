@@ -128,6 +128,6 @@ export default function RegisterRolePage() {
   );
 }
 
-function setMenuOpen(arg0: boolean) {
+function setMenuOpen(_arg0: boolean) {
   throw new Error('Function not implemented.');
 }

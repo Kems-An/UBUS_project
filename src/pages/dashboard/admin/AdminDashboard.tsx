@@ -1,215 +1,269 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  Users, 
-  Bus, 
-  CircleDollarSign, 
-  CalendarCheck, 
-  Search, 
-  Bell, 
-  ArrowUpRight, 
-  ChevronRight, 
-  ShieldAlert, 
-  MoreVertical 
+  Users, CircleDollarSign, CalendarCheck,
+ Bell,  ShieldAlert, 
+   QrCode
 } from 'lucide-react';
 
-const AdminDashboard: React.FC = () => {
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+interface Booking {
+  id: string;
+  seat_number: string;
+  phone: string;
+  provider: string;
+  amount: number;
+  status: string;
+  reference: string;
+  created_at: string;
+  user_id: string;
+}
+
+interface User {
+  id: string;
+  auth_id: string;
+  full_name: string;
+  email: string;
+  role: string;
+}
+
+export default function AdminDashboard() {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async () => {
+    const [bRes, uRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/bookings?order=created_at.desc&limit=50&select=*`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+      }),
+      fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+      }),
+    ]);
+    const b = await bRes.json();
+    const u = await uRes.json();
+    if (Array.isArray(b)) setBookings(b);
+    if (Array.isArray(u)) setUsers(u);
+    setLoading(false);
+  };
+
+  const students = users.filter(u => u.role === 'student');
+  const drivers = users.filter(u => u.role === 'driver');
+  const todayBookings = bookings.filter(b => {
+    const today = new Date().toDateString();
+    return new Date(b.created_at).toDateString() === today;
+  });
+  const todayRevenue = todayBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+  const confirmedCount = bookings.filter(b => b.status === 'confirmed').length;
+  const scannedCount = bookings.filter(b => b.status === 'scanned').length;
+  const totalRevenue = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+
+  // Build hourly chart data from today's bookings
+  const hourlyData = Array(8).fill(0).map((_, i) => {
+    const hour = 8 + i * 2;
+    const count = todayBookings.filter(b => {
+      const h = new Date(b.created_at).getHours();
+      return h >= hour && h < hour + 2;
+    }).length;
+    return { hour, count };
+  });
+  const maxCount = Math.max(...hourlyData.map(d => d.count), 1);
+
+  const getUserName = (userId: string) => {
+    const u = users.find(u => u.auth_id === userId);
+    return u?.full_name ?? 'Unknown Student';
+  };
+
+  const getStatusStyle = (status: string) => {
+    if (status === 'confirmed') return 'bg-blue-50 text-blue-600';
+    if (status === 'scanned') return 'bg-emerald-50 text-emerald-600';
+    if (status === 'cancelled') return 'bg-rose-50 text-rose-600';
+    return 'bg-slate-50 text-slate-500';
+  };
+
   return (
     <div className="p-4 lg:p-10 max-w-[1600px] mx-auto w-full animate-in fade-in duration-300">
       
-      {/* ─── HEADER CONTROLS LAYER ─── */}
+      {/* ─── HEADER ─── */}
       <header className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
-        <div className="relative w-full max-w-md group">
-          <Search 
-            className="absolute left-5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] group-focus-within:text-[var(--color-primary)] transition-colors" 
-            size={18} 
-          />
-          <input 
-            type="text" 
-            placeholder="Search assets, routes, or students..." 
-            className="w-full pl-14 pr-6 py-4 bg-white border border-[var(--color-border)] rounded-2xl text-sm font-semibold shadow-sm focus:ring-4 focus:ring-[var(--color-primary)]/5 transition-all outline-none text-[var(--color-text-main)]"
-          />
+        <div>
+          <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.2em]">Admin Panel</p>
+          <h2 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight mt-1">System Overview</h2>
         </div>
-        
         <div className="flex items-center gap-4 self-end md:self-auto">
-          <div className="flex bg-white p-1 rounded-xl shadow-sm border border-[var(--color-border)]">
-            <button className="px-6 py-2 bg-[var(--color-primary-dark)] text-white rounded-lg text-xs font-black tracking-widest uppercase shadow-sm">
-              Live
-            </button>
-            <button className="px-6 py-2 text-[var(--color-text-muted)] text-xs font-black tracking-widest uppercase hover:text-[var(--color-primary-dark)] transition-colors">
-              History
-            </button>
-          </div>
-          <button className="relative p-3.5 bg-white rounded-xl text-[var(--color-text-muted)] shadow-sm border border-[var(--color-border)] hover:bg-[var(--color-bg-soft)] transition-all">
-            <Bell size={18} />
-            <span className="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+          <button
+            onClick={fetchData}
+            className="px-5 py-2.5 bg-[var(--color-primary-dark)] text-white rounded-xl text-xs font-black tracking-widest uppercase shadow-sm hover:opacity-90 transition-opacity"
+          >
+            Refresh Data
           </button>
+          <div className="relative p-3.5 bg-white rounded-xl text-[var(--color-text-muted)] shadow-sm border border-[var(--color-border)]">
+            <Bell size={18} />
+            {confirmedCount > 0 && (
+              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+            )}
+          </div>
         </div>
       </header>
 
-      {/* ─── METRIC CARD LEDGER ─── */}
+      {/* ─── KPI CARDS ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <KPICard label="Total Students" value="12,482" trend="+12%" icon={<Users size={22} />} variant="primary" />
-        <KPICard label="Active Buses" value="42" total="/ 56" trend="Live" icon={<Bus size={22} />} variant="secondary" isLive />
-        <KPICard label="Today's Bookings" value="1,240" trend="Peak" icon={<CalendarCheck size={22} />} variant="primary" />
-        <KPICard label="Daily Revenue" value="2,850 FCFA" trend="+5.4%" icon={<CircleDollarSign size={22} />} variant="dark" />
+        {[
+          { label: 'Total Students', value: loading ? '...' : students.length.toString(), trend: `${drivers.length} drivers`, icon: <Users size={22} />, variant: 'primary' },
+          { label: "Today's Bookings", value: loading ? '...' : todayBookings.length.toString(), trend: 'Today', icon: <CalendarCheck size={22} />, variant: 'secondary', isLive: true },
+          { label: 'Tickets Scanned', value: loading ? '...' : scannedCount.toString(), trend: `${confirmedCount} pending`, icon: <QrCode size={22} />, variant: 'primary' },
+          { label: 'Total Revenue', value: loading ? '...' : `${totalRevenue} XAF`, trend: `${todayRevenue} today`, icon: <CircleDollarSign size={22} />, variant: 'dark' },
+        ].map((card, i) => (
+          <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--color-border)] hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-6">
+              <div className={`p-3 rounded-xl border ${
+                card.variant === 'dark' 
+                  ? 'bg-[var(--color-primary-dark)] text-white border-transparent'
+                  : 'bg-[var(--color-bg-soft,#f1f5f9)] text-[var(--color-primary)] border-[var(--color-border)]'
+              }`}>
+                {card.icon}
+              </div>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[var(--color-bg-soft,#f1f5f9)] rounded-md border border-[var(--color-border)]">
+                {card.isLive && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />}
+                <span className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">{card.trend}</span>
+              </div>
+            </div>
+            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-1">{card.label}</p>
+            <h3 className="text-2xl font-black tracking-tight text-[var(--color-primary-dark)]">{card.value}</h3>
+          </div>
+        ))}
       </div>
 
-      {/* ─── METRICS & DISPATCH OVERVIEW ─── */}
+      {/* ─── CHART + ALERT ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
         
-        {/* Utilization Column Chart */}
+        {/* Booking Activity Chart */}
         <div className="lg:col-span-8 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-[var(--color-border)]">
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex justify-between items-center mb-8">
             <div>
-              <h3 className="text-xl font-black tracking-tight text-[var(--color-primary-dark)]">Network Utilization</h3>
-              <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-1">Traffic Load Metrics</p>
+              <h3 className="text-xl font-black tracking-tight text-[var(--color-primary-dark)]">Today's Booking Activity</h3>
+              <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-1">Bookings per 2-hour window</p>
             </div>
+            <span className="text-xs font-black text-[var(--color-text-muted)]">{todayBookings.length} total today</span>
           </div>
-          <div className="h-64 flex items-end justify-between gap-3 sm:gap-6 px-2">
-            {[60, 85, 45, 95, 70, 30, 55, 80].map((height, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-3 group cursor-pointer h-full">
-                <div className="w-full bg-[var(--color-bg-soft)] rounded-t-xl relative overflow-hidden flex flex-col justify-end h-full">
-                  <div 
-                    className="bg-[var(--color-primary)] opacity-20 group-hover:opacity-40 transition-all duration-300 rounded-t-lg" 
-                    style={{ height: `${height}%` }}
+          <div className="h-48 flex items-end justify-between gap-3 sm:gap-6 px-2">
+            {hourlyData.map((d, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer h-full">
+                <span className="text-[9px] font-black text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity">
+                  {d.count}
+                </span>
+                <div className="w-full bg-[var(--color-bg-soft,#f1f5f9)] rounded-t-xl relative overflow-hidden flex flex-col justify-end h-full">
+                  <div
+                    className="bg-[var(--color-primary)] group-hover:opacity-90 transition-all duration-300 rounded-t-lg"
+                    style={{ height: `${(d.count / maxCount) * 100}%`, minHeight: d.count > 0 ? '8px' : '0' }}
                   />
                 </div>
-                <span className="text-[10px] font-bold text-[var(--color-text-muted)]">{8 + i * 2}:00</span>
+                <span className="text-[10px] font-bold text-[var(--color-text-muted)]">{d.hour}:00</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Tactical Incident Node */}
-        <div className="lg:col-span-4 flex flex-col">
-          <div className="bg-[var(--color-primary-dark)] p-6 sm:p-8 rounded-2xl text-white shadow-md relative overflow-hidden flex flex-col h-full justify-between">
+        {/* Status Summary */}
+        <div className="lg:col-span-4">
+          <div className="bg-[var(--color-primary-dark)] p-6 sm:p-8 rounded-2xl text-white shadow-md flex flex-col h-full justify-between">
             <div>
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-2">
-                  <ShieldAlert size={16} className="text-rose-400" />
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-white/50">Active System Alert</h3>
-                </div>
-                <MoreVertical size={16} className="text-white/30 cursor-pointer hover:text-white transition-colors" />
+              <div className="flex items-center gap-2 mb-6">
+                <ShieldAlert size={16} className="text-rose-400" />
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-white/50">Booking Status</h3>
               </div>
-              <h4 className="text-2xl font-black tracking-tight mb-3 leading-tight">
-                East Gate<br />Express Delay
-              </h4>
-              <p className="text-white/70 text-xs font-medium leading-relaxed">
-                Traffic congestion at Main St. intersection nodes. 3 standby fleet assets deployed to track.
-              </p>
+              <div className="space-y-4">
+                {[
+                  { label: 'Confirmed', value: confirmedCount, color: 'bg-blue-400' },
+                  { label: 'Scanned/Used', value: scannedCount, color: 'bg-emerald-400' },
+                  { label: 'Total', value: bookings.length, color: 'bg-white' },
+                ].map((s, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${s.color}`} />
+                      <span className="text-xs font-bold text-white/70">{s.label}</span>
+                    </div>
+                    <span className="text-lg font-black">{loading ? '...' : s.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <button className="mt-8 w-full py-3.5 bg-[var(--color-primary)] text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-md transition-transform active:scale-98">
-              Open Control Map
-            </button>
+            <div className="mt-6 pt-6 border-t border-white/10">
+              <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Total Revenue</p>
+              <p className="text-2xl font-black mt-1">{loading ? '...' : `${totalRevenue} XAF`}</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ─── DATA LEDGER ROUTE ENTRIES ─── */}
+      {/* ─── RECENT BOOKINGS TABLE ─── */}
       <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-[var(--color-border)]">
         <div className="p-6 sm:p-8 flex justify-between items-center border-b border-[var(--color-border)]">
           <div>
-            <h3 className="text-xl font-black tracking-tight text-[var(--color-primary-dark)]">Recent Network Activity</h3>
-            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5">Real-time entry stream</p>
+            <h3 className="text-xl font-black tracking-tight text-[var(--color-primary-dark)]">Recent Bookings</h3>
+            <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-0.5">Live entry stream</p>
           </div>
-          <button className="flex items-center gap-1 text-xs font-black text-[var(--color-primary)] uppercase tracking-widest transition-transform hover:translate-x-0.5">
-            Full History <ChevronRight size={14} />
-          </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest bg-[var(--color-bg-soft)] border-b border-[var(--color-border)]">
-                <th className="px-8 py-4 font-black">Passenger Profile</th>
-                <th className="px-8 py-4 font-black">Fleet Asset ID</th>
-                <th className="px-8 py-4 font-black">Network Status</th>
-                <th className="px-8 py-4 font-black text-right">Telemetry Matrix</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--color-border)]">
-              <TableRow name="Elena Smith" id="SH-102" status="Completed" variant="success" />
-              <TableRow name="Julian Weaver" id="SH-114" status="In Transit" variant="info" />
-            </tbody>
-          </table>
-        </div>
+
+        {loading ? (
+          <div className="p-10 text-center">
+            <div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-sm text-[var(--color-text-muted)] mt-3">Loading data...</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest bg-[var(--color-bg-soft,#f8fafc)] border-b border-[var(--color-border)]">
+                  {['Student', 'Seat', 'Provider', 'Amount', 'Date', 'Status'].map(h => (
+                    <th key={h} className="px-6 py-4 font-black">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-border)]">
+                {bookings.slice(0, 10).map(b => (
+                  <tr key={b.id} className="hover:bg-[var(--color-bg-soft,#f8fafc)]/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] text-xs font-black">
+                          {getUserName(b.user_id)?.charAt(0) ?? '?'}
+                        </div>
+                        <span className="text-sm font-bold text-[var(--color-primary-dark)] max-w-[120px] truncate">
+                          {getUserName(b.user_id)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-black text-sm text-[var(--color-primary-dark)]">{b.seat_number}</td>
+                    <td className="px-6 py-4 text-xs font-bold uppercase text-[var(--color-text-muted)]">{b.provider}</td>
+                    <td className="px-6 py-4 font-black text-sm text-[var(--color-primary-dark)]">{b.amount} XAF</td>
+                    <td className="px-6 py-4 text-xs text-[var(--color-text-muted)]">
+                      {new Date(b.created_at).toLocaleString('en-GB', {
+                        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true
+                      })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${getStatusStyle(b.status)}`}>
+                        {b.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+                {bookings.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-[var(--color-text-muted)]">
+                      No bookings yet
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
-};
-
-/* ─── REGISTRY DESIGN PATTERNS ─── */
-
-interface KPICardProps {
-  label: string;
-  value: string;
-  trend: string;
-  icon: React.ReactNode;
-  variant: 'primary' | 'secondary' | 'dark';
-  total?: string;
-  isLive?: boolean;
 }
-
-const KPICard = ({ label, value, trend, icon, variant, total, isLive }: KPICardProps) => {
-  const stylesMap = {
-    primary: 'bg-[var(--color-bg-soft)] text-[var(--color-primary)] border-[var(--color-border)]',
-    secondary: 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)] border-[var(--color-border)]',
-    dark: 'bg-[var(--color-primary-dark)] text-white border-transparent'
-  };
-
-  return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--color-border)] transition-all duration-300 hover:shadow-md">
-      <div className="flex justify-between items-start mb-6">
-        <div className={`p-3 rounded-xl border ${stylesMap[variant]}`}>
-          {icon}
-        </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[var(--color-bg-soft)] rounded-md border border-[var(--color-border)]">
-          {isLive && <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />}
-          <span className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">{trend}</span>
-        </div>
-      </div>
-      <p className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-1">{label}</p>
-      <h3 className="text-2xl font-black tracking-tight text-[var(--color-primary-dark)]">
-        {value} 
-        {total && <span className="text-sm font-bold text-[var(--color-text-muted)] ml-1">{total}</span>}
-      </h3>
-    </div>
-  );
-};
-
-interface TableRowProps {
-  name: string;
-  id: string;
-  status: string;
-  variant: 'success' | 'info';
-}
-
-const TableRow = ({ name, id, status, variant }: TableRowProps) => {
-  const statusStyles = {
-    success: 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)]',
-    info: 'bg-[var(--color-bg-soft)] text-[var(--color-primary)] border border-[var(--color-border)]'
-  };
-
-  return (
-    <tr className="hover:bg-[var(--color-bg-soft)]/50 transition-colors group">
-      <td className="px-8 py-5">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[var(--color-bg-soft)] border border-[var(--color-border)] flex items-center justify-center font-black text-xs text-[var(--color-primary)]">
-            {name.charAt(0)}
-          </div>
-          <span className="text-sm font-bold text-[var(--color-primary-dark)]">{name}</span>
-        </div>
-      </td>
-      <td className="px-8 py-5 text-sm font-extrabold text-[var(--color-text-muted)]">{id}</td>
-      <td className="px-8 py-5">
-        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${statusStyles[variant]}`}>
-          {status}
-        </span>
-      </td>
-      <td className="px-8 py-5 text-right">
-        <ArrowUpRight size={16} className="ml-auto text-[var(--color-text-muted)] opacity-60 group-hover:opacity-100 group-hover:text-[var(--color-primary)] transition-all" />
-      </td>
-    </tr>
-  );
-};
-
-export default AdminDashboard;

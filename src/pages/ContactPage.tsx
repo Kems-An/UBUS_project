@@ -6,9 +6,7 @@ import {
   MapPin, 
   Clock, 
   Send, 
-  HelpCircle,
-  MessageSquare,
-  FileText
+  HelpCircle
 } from 'lucide-react';
 
 const ContactUs: React.FC = () => {

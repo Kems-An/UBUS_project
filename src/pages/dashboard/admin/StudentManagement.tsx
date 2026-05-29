@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
-  Users, Search, Edit3, Trash2, UserCheck,
-  Filter, CheckCircle2, XCircle, Clock
+  Users, Search, 
+  CheckCircle2,  Clock
 } from 'lucide-react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -81,7 +81,7 @@ export default function StudentsManagement() {
 
   const totalRevenue = bookings.reduce((sum, b) => sum + (b.amount || 0), 0);
   const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
-  const scannedBookings = bookings.filter(b => b.status === 'scanned').length;
+ 
 
   return (
     <div className="p-4 lg:p-10 max-w-[1600px] mx-auto w-full animate-in fade-in duration-300">

@@ -1,3 +1,4 @@
+
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -43,22 +44,33 @@ export default function StudentLayout() {
         </div>
 
         {/* Nav Items */}
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 space-y-2">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.to === '/dashboard/student'}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+                `relative w-full flex items-center gap-4 px-4 py-3.5 font-bold text-sm transition-all group ${
                   isActive
-                    ? 'bg-[var(--color-primary-dark)] text-white shadow-sm'
-                    : 'text-[var(--color-text-muted)] hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-primary-dark)]'
+                    ? 'text-[var(--color-primary-dark)]'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)]'
                 }`
               }
             >
-              {item.icon}
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  {/* Active Underline Line Indicator Asset */}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-4 right-4 h-[3px] bg-[var(--color-primary)] rounded-full animate-in fade-in slide-in-from-bottom-1 duration-200" />
+                  )}
+
+                  <span className={`transition-colors ${isActive ? 'text-[var(--color-primary)]' : 'text-[var(--color-primary)] opacity-60 group-hover:opacity-100'}`}>
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -106,7 +118,6 @@ export default function StudentLayout() {
             <span className="truncate max-w-full">{item.label}</span>
           </NavLink>
         ))}
-        {/* Mobile Sign Out Action trigger */}
         <button
           onClick={handleLogout}
           className="flex flex-col items-center gap-1 p-2 rounded-xl transition-all text-[9px] font-black min-w-[60px] text-center text-rose-600 active:scale-95"

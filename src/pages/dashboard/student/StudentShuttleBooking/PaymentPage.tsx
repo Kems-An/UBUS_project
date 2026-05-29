@@ -24,25 +24,6 @@ function getCurrentUser() {
 
 // ─── Create a secure signed QR value ───
 // We combine booking data + a secret stamp so fake tickets can be detected
-function buildQRValue(data: {
-  bookingId: string;
-  seat: string;
-  phone: string;
-  provider: string;
-  bookedAt: string;
-  status: string;
-  reference: string;
-  studentName: string;
-  studentId: string;
-}) {
-  // Simple integrity check: hash-like string combining key fields
-  // When the driver scans, they verify bookingId exists in Supabase
-  const integrityStamp = btoa(
-    `${data.bookingId}|${data.seat}|${data.bookedAt}`
-  ).slice(0, 16);
-
-  return JSON.stringify({ ...data, stamp: integrityStamp });
-}
 
 export default function PaymentPage() {
   const location = useLocation();

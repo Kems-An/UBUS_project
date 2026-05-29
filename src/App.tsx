@@ -23,8 +23,6 @@ import PaymentPage from './pages/dashboard/student/StudentShuttleBooking/Payment
 import BookingConfirmationPage from './pages/dashboard/student/StudentShuttleBooking/BookingConfirmationPage';
 import StudentProfilePage from './pages/dashboard/student/StudentProfilePage';
 import StudentBookingsPage from './pages/dashboard/student/StudentResumePage';
-
-import { supabase } from "./lib/superbaseClient";
 import DriverLayout from './components/Driverlayout';
 import DriverDashboard from './pages/dashboard/driver/DriverDashboard';
 import DriverSchedule from './pages/dashboard/driver/DriverRoute';

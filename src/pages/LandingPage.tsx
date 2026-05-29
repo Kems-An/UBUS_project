@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import caroussel1 from "../assets/images/caroussel1.jpeg";
 import caroussel2 from "../assets/images/caroussel2.jpeg";
@@ -20,7 +20,7 @@ import {
   Headphones,
   Compass,
   QrCode,
-  ShieldCheck,
+
   Star
 } from 'lucide-react';
 
