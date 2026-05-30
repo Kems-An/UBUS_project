@@ -14,6 +14,7 @@ const navItems = [
   { label: 'Dashboard', icon: <LayoutDashboard size={18} />, to: '/dashboard/admin' },
   { label: 'Students', icon: <Users size={18} />, to: '/dashboard/admin/students' },
   { label: 'Driver', icon: <Bus size={18} />, to: '/dashboard/admin/drivers' },
+  { label: 'Shuttle', icon: <Bus size={18} />, to: '/dashboard/admin/shuttle-management' },
   { label: 'Routes', icon: <Map size={18} />, to: '/dashboard/admin/routes' },
   { label: 'Financials', icon: <CircleDollarSign size={18} />, to: '/dashboard/admin/financials' }, 
 ];

@@ -1,45 +1,45 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, Smartphone } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Smartphone, MapPin } from 'lucide-react';
 import { initiatePayment } from '../../../../lib/campay';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_URL   = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const SESSION_KEY = 'shuttle_session';
+const SESSION_KEY    = 'shuttle_session';
 
-type Provider = 'mtn' | 'orange';
+type Provider      = 'mtn' | 'orange';
 type PaymentStatus = 'idle' | 'processing' | 'success' | 'failed';
 
-// ─── Get the real logged-in student from localStorage ───
 function getCurrentUser() {
   try {
     const saved = localStorage.getItem(SESSION_KEY);
     if (!saved) return null;
-    const parsed = JSON.parse(saved);
-    return parsed.profile ?? null;
-  } catch {
-    return null;
-  }
+    return JSON.parse(saved).profile ?? null;
+  } catch { return null; }
 }
 
-// ─── Create a secure signed QR value ───
-// We combine booking data + a secret stamp so fake tickets can be detected
+function buildIntegrityStamp(bookingId: string, seat: string, bookedAt: string) {
+  return btoa(`${bookingId}|${seat}|${bookedAt}`).slice(0, 16);
+}
 
 export default function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const selectedSeat = (location.state as { seat?: string })?.seat ?? 'N/A';
-  const shuttleId = (location.state as { shuttleId?: string })?.shuttleId ?? null;
-  const routeName = (location.state as { routeName?: string })?.routeName ?? 'Campus Route';
+  // ── All state passed from SeatSelectionPage ──
+  const selectedSeat  = (location.state as any)?.seat        ?? 'N/A';
+  const shuttleId     = (location.state as any)?.shuttleId   ?? null;
+  const shuttleName   = (location.state as any)?.shuttleName ?? 'Shuttle';
+  const departure     = (location.state as any)?.departure   ?? '';
+  const destination   = (location.state as any)?.destination ?? '';
 
-  const [provider, setProvider] = useState<Provider>('mtn');
-  const [phone, setPhone] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>('idle');
-  const [transactionId, setTransactionId] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [bookingData, setBookingData] = useState<any>(null);
+  const [provider,       setProvider]       = useState<Provider>('mtn');
+  const [phone,          setPhone]          = useState('');
+  const [loading,        setLoading]        = useState(false);
+  const [paymentStatus,  setPaymentStatus]  = useState<PaymentStatus>('idle');
+  const [transactionId,  setTransactionId]  = useState('');
+  const [errorMsg,       setErrorMsg]       = useState('');
+  const [bookingData,    setBookingData]    = useState<any>(null);
 
   const handlePay = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,9 +47,7 @@ export default function PaymentPage() {
     setPaymentStatus('processing');
 
     try {
-      // ─── Get real logged-in student ───
       const currentUser = getCurrentUser();
-
       if (!currentUser) {
         setErrorMsg('Session expired. Please log in again.');
         setPaymentStatus('failed');
@@ -57,13 +55,11 @@ export default function PaymentPage() {
         return;
       }
 
-      // ─── Call CamPay ───
+      // ── Call CamPay ──
       const result = await initiatePayment(phone, 100);
+      let status    = result?.status;
+      let reference = result?.reference || result?.transaction_id || ('TXN' + Date.now());
 
-      let status = result?.status;
-      let reference = result?.reference || result?.transaction_id || 'N/A';
-
-      // If pending, wait for user to approve on phone
       if (status === 'PENDING' || status === 'INITIATED' || !status) {
         await new Promise(res => setTimeout(res, 6000));
         status = 'SUCCESSFUL';
@@ -72,7 +68,7 @@ export default function PaymentPage() {
       if (status === 'SUCCESSFUL' || result?.success === true) {
         const bookedAt = new Date().toISOString();
 
-        // ─── Save booking with REAL user ID ───
+        // ── Save booking to Supabase ──
         const response = await fetch(`${SUPABASE_URL}/rest/v1/bookings`, {
           method: 'POST',
           headers: {
@@ -82,33 +78,37 @@ export default function PaymentPage() {
             Prefer: 'return=representation',
           },
           body: JSON.stringify({
-            user_id: currentUser.auth_id,   // ✅ REAL student ID
-            shuttle_id: shuttleId,
+            user_id:     currentUser.auth_id,
+            shuttle_id:  shuttleId,
             seat_number: selectedSeat,
             phone,
             provider,
-            amount: 100,
-            status: 'confirmed',
+            amount:      100,
+            status:      'confirmed',
             reference,
-            created_at: bookedAt,
+            departure,
+            destination,
+            created_at:  bookedAt,
           }),
         });
 
-        const savedRows = await response.json();
+        const savedRows   = await response.json();
         const savedBooking = Array.isArray(savedRows) ? savedRows[0] : savedRows;
 
-        // ─── Build full ticket data ───
+        // ── Build ticket data with all fields ──
         const fullBookingData = {
-          bookingId: savedBooking?.id ?? 'N/A',
-          seat: selectedSeat,
+          bookingId:   savedBooking?.id ?? 'N/A',
+          seat:        selectedSeat,
           phone,
           provider,
           bookedAt,
-          status: 'confirmed',
+          status:      'confirmed',
           reference,
-          routeName,
-          studentName: currentUser.full_name,   // ✅ Real student name
-          studentId: currentUser.student_id ?? currentUser.auth_id,  // ✅ Real student ID
+          shuttleName,
+          departure,
+          destination,
+          studentName: currentUser.full_name,
+          studentId:   currentUser.student_id ?? currentUser.auth_id,
         };
 
         setBookingData(fullBookingData);
@@ -116,20 +116,18 @@ export default function PaymentPage() {
         setPaymentStatus('success');
 
       } else {
-        setErrorMsg(result?.message || 'Payment was not confirmed.');
+        setErrorMsg(result?.message || 'Payment was not confirmed. Please try again.');
         setPaymentStatus('failed');
       }
-
     } catch (error) {
-      console.error(error);
-      setErrorMsg('Network error or payment failed.');
+      setErrorMsg('Network error. Please check your connection and try again.');
       setPaymentStatus('failed');
     }
 
     setLoading(false);
   };
 
-  // ── PROCESSING SCREEN ──
+  // ── PROCESSING ──
   if (paymentStatus === 'processing') {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
@@ -137,17 +135,15 @@ export default function PaymentPage() {
           <div className="w-16 h-16 mx-auto rounded-full border-4 border-[var(--color-primary)] border-t-transparent animate-spin mb-6" />
           <h2 className="text-2xl font-black text-[var(--color-primary-dark)]">Processing Payment</h2>
           <p className="text-sm text-[var(--color-text-muted)] mt-3">
-            Please confirm the payment on your phone.
+            Please confirm the payment prompt on your {provider === 'mtn' ? 'MTN' : 'Orange'} phone.
           </p>
-          <p className="text-xs text-[var(--color-text-muted)] mt-2 italic">
-            Do not close this page.
-          </p>
+          <p className="text-xs text-[var(--color-text-muted)] mt-2 italic">Do not close this page.</p>
         </div>
       </div>
     );
   }
 
-  // ── SUCCESS SCREEN ──
+  // ── SUCCESS ──
   if (paymentStatus === 'success') {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
@@ -155,31 +151,42 @@ export default function PaymentPage() {
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
             <ShieldCheck size={40} className="text-green-600" />
           </div>
-          <h2 className="text-3xl font-black text-[var(--color-primary-dark)]">Payment Successful</h2>
-          <p className="text-sm text-[var(--color-text-muted)] mt-4">
-            Your shuttle seat has been reserved successfully.
-          </p>
-          <div className="mt-6 p-4 rounded-2xl bg-[var(--color-bg-muted)]">
-            <p className="text-[10px] uppercase font-black tracking-widest text-[var(--color-text-muted)]">
-              Transaction Reference
-            </p>
-            <p className="mt-2 text-sm font-black text-[var(--color-primary-dark)] break-all">
-              {transactionId}
-            </p>
+          <h2 className="text-3xl font-black text-[var(--color-primary-dark)]">Payment Successful!</h2>
+          <p className="text-sm text-[var(--color-text-muted)] mt-4">Your shuttle seat has been reserved.</p>
+          <div className="mt-5 p-4 rounded-2xl bg-[var(--color-bg-muted)] text-left space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-[var(--color-text-muted)]">Seat</span>
+              <span className="font-black text-[var(--color-primary-dark)]">{selectedSeat}</span>
+            </div>
+            {departure && (
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--color-text-muted)]">From</span>
+                <span className="font-black text-[var(--color-primary-dark)]">{departure}</span>
+              </div>
+            )}
+            {destination && (
+              <div className="flex justify-between text-sm">
+                <span className="text-[var(--color-text-muted)]">To</span>
+                <span className="font-black text-[var(--color-primary-dark)]">{destination}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm">
+              <span className="text-[var(--color-text-muted)]">Reference</span>
+              <span className="font-black text-[var(--color-primary-dark)] text-xs break-all max-w-[60%] text-right">{transactionId}</span>
+            </div>
           </div>
           <button
             onClick={() => navigate('/dashboard/student/ticket', { state: bookingData })}
             className="w-full mt-8 py-4 rounded-2xl bg-[var(--color-primary-dark)] text-white font-black text-sm flex items-center justify-center gap-3 hover:bg-[var(--color-primary)] transition-all"
           >
-            View & Download Ticket
-            <ArrowRight size={18} />
+            View & Download Ticket <ArrowRight size={18} />
           </button>
         </div>
       </div>
     );
   }
 
-  // ── FAILURE SCREEN ──
+  // ── FAILED ──
   if (paymentStatus === 'failed') {
     return (
       <div className="min-h-screen flex items-center justify-center px-6">
@@ -189,10 +196,8 @@ export default function PaymentPage() {
           </div>
           <h2 className="text-3xl font-black text-[var(--color-primary-dark)]">Payment Failed</h2>
           <p className="text-sm text-red-500 mt-4">{errorMsg}</p>
-          <button
-            onClick={() => setPaymentStatus('idle')}
-            className="w-full mt-8 py-4 rounded-2xl bg-[var(--color-primary-dark)] text-white font-black text-sm hover:bg-[var(--color-primary)] transition-all"
-          >
+          <button onClick={() => setPaymentStatus('idle')}
+            className="w-full mt-8 py-4 rounded-2xl bg-[var(--color-primary-dark)] text-white font-black text-sm hover:bg-[var(--color-primary)] transition-all">
             Try Again
           </button>
         </div>
@@ -200,7 +205,7 @@ export default function PaymentPage() {
     );
   }
 
-  // ── MAIN PAYMENT FORM (UI unchanged) ──
+  // ── MAIN FORM ──
   return (
     <div className="pt-6 pb-12 px-4 sm:px-8 lg:px-12 max-w-5xl mx-auto overflow-x-hidden">
       <div className="mb-8 md:mb-10 text-center lg:text-left">
@@ -220,24 +225,36 @@ export default function PaymentPage() {
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
               Total Amount
             </span>
-            <h3 className="text-3xl md:text-4xl font-black text-[var(--color-primary-dark)] mt-2">
-              100 XAF
-            </h3>
-            <div className="mt-6 md:mt-8 space-y-4">
+            <h3 className="text-3xl md:text-4xl font-black text-[var(--color-primary-dark)] mt-2">100 XAF</h3>
+
+            <div className="mt-6 space-y-3">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-[var(--color-text-muted)] font-medium">Seat Reference</span>
+                <span className="text-[var(--color-text-muted)] font-medium">Shuttle</span>
+                <span className="font-bold text-[var(--color-primary-dark)]">{shuttleName}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-[var(--color-text-muted)] font-medium">Seat</span>
                 <span className="font-bold text-[var(--color-primary-dark)]">{selectedSeat}</span>
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-[var(--color-text-muted)] font-medium">Route</span>
-                <span className="font-bold text-[var(--color-primary-dark)]">{routeName}</span>
-              </div>
+              {departure && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[var(--color-text-muted)] font-medium">From</span>
+                  <span className="font-bold text-[var(--color-primary-dark)] text-right max-w-[55%]">{departure}</span>
+                </div>
+              )}
+              {destination && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-[var(--color-text-muted)] font-medium">To</span>
+                  <span className="font-bold text-[var(--color-primary-dark)] text-right max-w-[55%]">{destination}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center text-sm">
                 <span className="text-[var(--color-text-muted)] font-medium">Service Fee</span>
                 <span className="font-bold text-green-500">Included</span>
               </div>
             </div>
-            <div className="mt-6 md:mt-8 pt-6 border-t border-[var(--color-border)] flex items-center gap-3">
+
+            <div className="mt-6 pt-5 border-t border-[var(--color-border)] flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-[var(--color-primary)]">
                 <ShieldCheck size={18} />
               </div>
@@ -252,10 +269,7 @@ export default function PaymentPage() {
         <div className="lg:col-span-7 space-y-6 order-1 lg:order-2">
           <div className="grid grid-cols-2 gap-3 md:gap-4">
             {(['mtn', 'orange'] as const).map(p => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setProvider(p)}
+              <button key={p} type="button" onClick={() => setProvider(p)}
                 className={`p-4 md:p-5 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 md:gap-3 ${
                   provider === p
                     ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/5'
@@ -276,11 +290,9 @@ export default function PaymentPage() {
             ))}
           </div>
 
-          <form
-            onSubmit={handlePay}
-            className="p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] bg-white border border-[var(--color-border)] space-y-6 md:space-y-8"
-          >
-            <div className="w-full">
+          <form onSubmit={handlePay}
+            className="p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] bg-white border border-[var(--color-border)] space-y-6">
+            <div>
               <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] mb-3 ml-1">
                 Phone Number
               </label>
@@ -289,10 +301,7 @@ export default function PaymentPage() {
                   <Smartphone size={14} className="text-[var(--color-text-muted)] hidden xs:block" />
                   +237
                 </div>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
+                <input type="tel" required value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder="6XX XXX XXX"
                   className="flex-1 min-w-0 px-4 md:px-5 py-4 border border-[var(--color-border)] rounded-r-2xl outline-none text-sm font-bold focus:border-[var(--color-primary)] focus:ring-4 ring-[var(--color-primary)]/5 transition-all"
@@ -300,8 +309,7 @@ export default function PaymentPage() {
               </div>
             </div>
 
-            <button
-              disabled={loading}
+            <button disabled={loading}
               className="w-full py-4 md:py-5 rounded-2xl bg-[var(--color-primary-dark)] text-white font-black text-xs md:text-sm flex items-center justify-center gap-3 transition-all hover:bg-[var(--color-primary)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-900/10"
             >
               {loading ? (

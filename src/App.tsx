@@ -41,6 +41,7 @@ import FinancialsManagement from './pages/dashboard/admin/FinancialsManagements'
 import AdminLoginPage from './pages/login/AdminLoginPage';
 import TicketPage from './pages/dashboard/student/StudentShuttleBooking/TicketPage';
 import QRScannerPage from './pages/dashboard/driver/QRscannerPage';
+import ShuttleManagementPage from './pages/dashboard/admin/StudentManagement';
 export default function App() {
   // Initialize state based on session storage to prevent the "flicker"
   const [isLoading, setIsLoading] = useState(() => {
@@ -129,7 +130,9 @@ export default function App() {
               <Route path="students" element={<Studentsmanagement />} />
               <Route path="drivers" element={<DriversManagement />} />
               <Route path="routes" element={<RoutesAnalytics />} />
+               <Route path="shuttle-management" element={<ShuttleManagementPage />} />
               <Route path="financials" element={<FinancialsManagement />} />
+
             </Route>
           </Routes>
         </BrowserRouter>
