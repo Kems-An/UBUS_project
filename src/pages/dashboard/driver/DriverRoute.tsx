@@ -1,217 +1,269 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { 
-  Navigation, 
-  CheckCircle2, 
-  Search, 
-  Map as MapIcon, 
-  Clock, 
-  Bus, 
-  MapPin,
-  ExternalLink
+  Navigation, CheckCircle2, Search, Clock, 
+  Bus, MapPin, Users, RefreshCw, QrCode
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const ROUTES = [
-  {
-    id: 1,
-    title: "Main Campus Loop",
-    status: "COMPLETED",
-    time: "06:00 AM - 08:00 AM",
-    stops: 12,
-    shuttle: "SH-102",
-    isCompleted: true,
-  },
-  {
-    id: 2,
-    title: "North-South Connector",
-    status: "ON-DUTY",
-    time: "08:00 AM - 12:00 PM",
-    stops: 8,
-    shuttle: "SH-102",
-    isActive: true,
-  },
-  {
-    id: 3,
-    title: "Evening Express",
-    status: "NEXT TRIP",
-    time: "01:00 PM - 03:00 PM",
-    stops: 4,
-    shuttle: "SH-105",
-  }
-];
+const SUPABASE_URL    = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+interface Shuttle {
+  id: string;
+  name: string;
+  route: string;
+  capacity: number;
+  departure_time: string;
+  status: string;
+  seats_taken?: number;
+}
+
+interface Booking {
+  id: string;
+  seat_number: string;
+  phone: string;
+  status: string;
+  created_at: string;
+  departure: string;
+  destination: string;
+  shuttle_id: string;
+}
 
 export default function DriverSchedule() {
-  const { user } = useAuth();
+  const { user }   = useAuth();
+  const navigate   = useNavigate();
+  const [shuttles,   setShuttles]   = useState<Shuttle[]>([]);
+  const [bookings,   setBookings]   = useState<Booking[]>([]);
+  const [selected,   setSelected]   = useState<string | null>(null);
+  const [loading,    setLoading]    = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => { fetchData(); }, []);
+
+  const fetchData = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true); else setLoading(true);
+
+    const today = new Date().toISOString().split('T')[0];
+    const [sRes, bRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/shuttles?order=departure_time.asc&select=*`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+      }),
+      fetch(`${SUPABASE_URL}/rest/v1/bookings?created_at=gte.${today}&order=created_at.desc&select=*`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+      }),
+    ]);
+
+    const sData: Shuttle[] = await sRes.json();
+    const bData: Booking[] = await bRes.json();
+
+    if (Array.isArray(sData)) {
+      // Count seats taken per shuttle
+      const takenMap: { [id: string]: number } = {};
+      if (Array.isArray(bData)) {
+        bData.forEach(b => {
+          if (b.shuttle_id && (b.status === 'confirmed' || b.status === 'scanned')) {
+            takenMap[b.shuttle_id] = (takenMap[b.shuttle_id] || 0) + 1;
+          }
+        });
+      }
+      setShuttles(sData.map(s => ({ ...s, seats_taken: takenMap[s.id] || 0 })));
+      if (sData.length > 0 && !selected) setSelected(sData[0].id);
+    }
+
+    if (Array.isArray(bData)) setBookings(bData);
+    setLoading(false);
+    setRefreshing(false);
+  };
+
+  const activeShuttle = shuttles.find(s => s.id === selected);
+  const shuttleBookings = bookings.filter(b => b.shuttle_id === selected);
+  const confirmedCount  = shuttleBookings.filter(b => b.status === 'confirmed').length;
+  const scannedCount    = shuttleBookings.filter(b => b.status === 'scanned').length;
+  const available       = activeShuttle ? activeShuttle.capacity - (activeShuttle.seats_taken ?? 0) : 0;
+
+  const getStatusStyle = (status: string) => {
+    if (status === 'scanned')   return 'bg-emerald-50 text-emerald-600';
+    if (status === 'confirmed') return 'bg-blue-50 text-blue-600';
+    return 'bg-slate-50 text-slate-500';
+  };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 space-y-10">
-      
-      {/* ─── TOP HEADER ─── */}
+    <div className="animate-in fade-in duration-500 space-y-8 pb-12 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+
+      {/* Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight sm:text-4xl">
+          <h2 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight">
             Daily Schedule
           </h2>
           <p className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mt-1.5">
-            Operational Log: Shift Circuit Updates
+            Live shuttle assignments and passenger lists
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="px-4 py-2 bg-white border border-[var(--color-border)] rounded-xl flex items-center gap-2.5 shadow-xs">
+          <div className="px-4 py-2 bg-white border border-[var(--color-border)] rounded-xl flex items-center gap-2.5 shadow-sm">
             <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" />
-            <span className="text-[10px] font-black text-[var(--color-primary-dark)] uppercase tracking-wider">
-              On-Duty Network
-            </span>
+            <span className="text-[10px] font-black text-[var(--color-primary-dark)] uppercase tracking-wider">On-Duty</span>
           </div>
-          <button className="p-2.5 bg-white border border-[var(--color-border)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)] transition-colors shadow-xs">
-            <Search size={16} />
+          <button onClick={() => fetchData(true)} disabled={refreshing}
+            className="p-2.5 bg-white border border-[var(--color-border)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors">
+            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
           </button>
         </div>
       </header>
 
-      {/* ─── HERO ASSIGNMENT SECTION ─── */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Main Route Tracking Block: Deep Emerald Theme Background */}
-        <div className="lg:col-span-8 bg-[var(--color-primary)] text-white rounded-2xl p-8 relative overflow-hidden flex flex-col justify-between min-h-[260px] shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        {/* Active Shuttle Card */}
+        <div className="lg:col-span-8 bg-[var(--color-primary)] text-white rounded-2xl p-8 relative overflow-hidden flex flex-col justify-between min-h-[240px] shadow-sm">
           <div className="relative z-10">
             <span className="text-[9px] font-black tracking-widest bg-white/15 px-3 py-1 rounded-full uppercase border border-white/10">
-              Active Transponder Route
+              Active Shuttle
             </span>
-            <h3 className="text-3xl font-black mt-5 tracking-tight">North-South Connector</h3>
-            <p className="mt-2.5 text-white/85 flex items-center gap-2 font-semibold text-xs">
-              <Bus size={14} /> Assigned License Key: <span className="font-mono">{user?.license_number || 'UNSET-CNF'}</span>
-            </p>
+            <h3 className="text-3xl font-black mt-4 tracking-tight">
+              {activeShuttle?.name ?? (loading ? 'Loading...' : 'No shuttles available')}
+            </h3>
+            {activeShuttle && (
+              <p className="mt-2 text-white/80 flex items-center gap-2 font-semibold text-xs">
+                <Bus size={14} /> Driver: {user?.full_name ?? 'You'}
+              </p>
+            )}
           </div>
-          
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6 mt-6 pt-6 border-t border-white/10">
-            <div>
-              <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest mb-0.5">Next Operational Stop Node</p>
-              <p className="text-lg font-black tracking-tight">Engineering Quad (Gate B)</p>
-            </div>
-            <button className="bg-white text-[var(--color-primary-dark)] font-black px-6 py-3.5 rounded-xl shadow-xs hover:bg-[var(--color-bg-soft)] transition-all text-xs flex items-center justify-center gap-2 shrink-0">
-              <MapIcon size={14} /> Telemetry Map
+            {activeShuttle && (
+              <div className="space-y-1">
+                <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest">Departure Time</p>
+                <p className="text-lg font-black">{activeShuttle.departure_time}</p>
+              </div>
+            )}
+            <button onClick={() => navigate('/dashboard/driver/scan')}
+              className="bg-white text-[var(--color-primary-dark)] font-black px-6 py-3.5 rounded-xl hover:bg-opacity-90 transition-all text-xs flex items-center gap-2 shrink-0">
+              <QrCode size={14} /> Scan Tickets
             </button>
           </div>
           <div className="absolute -right-16 -bottom-16 w-80 h-80 bg-white/5 rounded-full blur-3xl pointer-events-none" />
         </div>
 
-        {/* Progress Metrics Panel: Custom Accent Variable Integration */}
-        <div className="lg:col-span-4 bg-white border border-[var(--color-border)] rounded-2xl p-6 flex flex-col justify-between shadow-xs">
-          <div>
-            <h4 className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-4">
-              Shift Operations Progress
-            </h4>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tighter">3 / 5</span>
-              <span className="text-[10px] font-black text-[var(--color-primary-dark)] bg-[var(--color-secondary-light)] px-2.5 py-1 rounded-full tracking-wide">
-                60% CYCLE COMPLETE
-              </span>
-            </div>
-            <div className="w-full bg-[var(--color-bg-soft)] h-2.5 rounded-full overflow-hidden border border-[var(--color-border)]/40">
-              <div className="bg-[var(--color-primary)] h-full rounded-full transition-all duration-1000" style={{ width: '60%' }} />
-            </div>
-          </div>
-          
-          <div className="mt-6 flex items-center gap-3.5 bg-[var(--color-bg-soft)] p-3.5 rounded-xl border border-[var(--color-border)]">
-            <div className="p-2 bg-white text-[var(--color-primary)] rounded-lg border border-[var(--color-border)] shadow-2xs">
-              <Clock size={16} />
-            </div>
-            <div>
-              <p className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Remaining Run Duration</p>
-              <p className="text-base font-black text-[var(--color-primary-dark)] tracking-tight">04h 22m</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── ROUTE SCHEDULE LIST ─── */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-black text-[var(--color-primary-dark)] tracking-tight">
-            Assigned Loops
-          </h3>
-          <div className="flex p-1 bg-[var(--color-bg-soft)] border border-[var(--color-border)] rounded-xl">
-            <button className="px-4 py-1.5 text-[10px] font-black rounded-lg bg-white shadow-xs text-[var(--color-primary-dark)]">All Loops</button>
-            <button className="px-4 py-1.5 text-[10px] font-bold rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)] transition-colors">Pending</button>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          {ROUTES.map((route) => (
-            <div 
-              key={route.id} 
-              className={`group bg-white p-5 rounded-2xl border transition-all duration-200 flex flex-col md:flex-row md:items-center gap-5 
-                ${route.isActive ? 'border-[var(--color-primary)] shadow-xs ring-1 ring-[var(--color-primary)]/10' : 'border-[var(--color-border)] hover:bg-[var(--color-bg-soft)]'}`}
-            >
-              <div className="flex-shrink-0">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-102
-                  ${route.isCompleted ? 'bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border border-[var(--color-border)]' : route.isActive ? 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)]' : 'bg-[var(--color-bg-soft)] text-[var(--color-primary-dark)] border border-[var(--color-border)]'}`}>
-                  {route.isCompleted ? <CheckCircle2 size={22} /> : <Navigation size={22} />}
+        {/* Shift Stats */}
+        <div className="lg:col-span-4 bg-white border border-[var(--color-border)] rounded-2xl p-6 flex flex-col justify-between shadow-sm">
+          <h4 className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest mb-4">
+            Shift Progress
+          </h4>
+          <div className="space-y-4">
+            {[
+              { label: 'Awaiting Boarding', value: confirmedCount },
+              { label: 'Boarded (Scanned)', value: scannedCount  },
+              { label: 'Seats Available',   value: available      },
+            ].map((item, i) => (
+              <div key={i} className="flex justify-between items-center py-2 border-b border-[var(--color-bg-soft,#f1f5f9)] last:border-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
+                  <span className="text-xs font-bold text-[var(--color-primary-dark)]">{item.label}</span>
                 </div>
+                <span className="text-base font-black text-[var(--color-primary-dark)]">
+                  {loading ? '...' : item.value}
+                </span>
               </div>
-
-              <div className="flex-grow">
-                <div className="flex items-center gap-2.5 mb-1.5">
-                  <h4 className={`text-base font-extrabold tracking-tight ${route.isCompleted ? 'text-[var(--color-text-muted)] line-through decoration-1' : 'text-[var(--color-primary-dark)]'}`}>
-                    {route.title}
-                  </h4>
-                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider
-                    ${route.isCompleted ? 'bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border border-[var(--color-border)]' : route.isActive ? 'bg-[var(--color-secondary-light)] text-[var(--color-primary-dark)]' : 'bg-[var(--color-bg-soft)] text-[var(--color-primary-dark)] border border-[var(--color-border)]'}`}>
-                    {route.status}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-semibold text-[var(--color-text-muted)]">
-                  <span className="flex items-center gap-1"><Clock size={12} className={route.isActive ? 'text-[var(--color-primary)]' : ''} /> {route.time}</span>
-                  <span className="flex items-center gap-1"><MapPin size={12} className={route.isActive ? 'text-[var(--color-primary)]' : ''} /> {route.stops} Terminals</span>
-                  <span className="flex items-center gap-1"><Bus size={12} className={route.isActive ? 'text-[var(--color-primary)]' : ''} /> Asset {route.shuttle}</span>
-                </div>
-              </div>
-
-              <div className="md:ml-auto shrink-0">
-                {route.isCompleted ? (
-                  <button className="w-full md:w-auto px-4 py-2.5 rounded-xl border border-[var(--color-border)] text-[var(--color-text-muted)] font-bold text-xs bg-[var(--color-bg-soft)] cursor-not-allowed">
-                    Archived Log
-                  </button>
-                ) : (
-                  <button className={`w-full md:w-auto px-4 py-2.5 rounded-xl font-bold text-xs shadow-2xs transition-all active:scale-98
-                    ${route.isActive ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-primary-dark)] text-white'}`}>
-                    Open Manifest
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── LIVE INFRASTRUCTURE CONTEXT ─── */}
-      <section className="rounded-2xl overflow-hidden relative h-[240px] border border-[var(--color-border)] shadow-2xs group">
-        <img 
-          src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=2066&auto=format&fit=crop" 
-          alt="University Grid Layout Map" 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-102 grayscale opacity-25" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-primary-dark)]/20 to-transparent" />
-        
-        <div className="absolute bottom-5 left-5 right-5 p-5 bg-white/90 backdrop-blur-md rounded-xl flex items-center justify-between border border-white/40 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-11 h-11 bg-[var(--color-primary)] rounded-lg flex items-center justify-center text-white shadow-2xs">
-              <MapIcon size={18} />
-            </div>
-            <div>
-              <h5 className="font-extrabold text-[var(--color-primary-dark)] text-base tracking-tight">Campus Traffic Status</h5>
-              <p className="text-xs text-[var(--color-primary)] font-bold uppercase tracking-wider">All Transit Vectors Clear</p>
-            </div>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-3">
-             <button className="p-2.5 bg-white rounded-lg shadow-2xs border border-[var(--color-border)] text-[var(--color-text-muted)] hover:text-[var(--color-primary-dark)] transition-colors">
-               <ExternalLink size={16} />
-             </button>
+            ))}
           </div>
         </div>
-      </section>
 
+        {/* Shuttle Selector */}
+        <div className="lg:col-span-12 space-y-3">
+          <h3 className="text-lg font-black text-[var(--color-primary-dark)]">All Shuttles Today</h3>
+          {loading ? (
+            <div className="p-8 text-center bg-white border border-[var(--color-border)] rounded-2xl">
+              <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto" />
+            </div>
+          ) : shuttles.length === 0 ? (
+            <div className="p-8 text-center bg-white border border-[var(--color-border)] rounded-2xl">
+              <Bus size={28} className="text-[var(--color-text-muted)] mx-auto mb-2 opacity-30" />
+              <p className="text-sm text-[var(--color-text-muted)]">No shuttles created yet. Admin must add shuttles.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {shuttles.map(s => {
+                const sBookings = bookings.filter(b => b.shuttle_id === s.id);
+                const isActive  = selected === s.id;
+                return (
+                  <div key={s.id} onClick={() => setSelected(s.id)}
+                    className={`group bg-white p-5 rounded-2xl border transition-all cursor-pointer flex flex-col md:flex-row md:items-center gap-5 ${
+                      isActive ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/10 shadow-sm' : 'border-[var(--color-border)] hover:bg-[var(--color-bg-soft,#f8fafc)]'
+                    }`}>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isActive ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-bg-soft,#f1f5f9)] text-[var(--color-primary-dark)]'}`}>
+                      <Bus size={22} />
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-base font-black text-[var(--color-primary-dark)]">{s.name}</h4>
+                        {isActive && (
+                          <span className="text-[9px] font-black px-2 py-0.5 rounded-md bg-[var(--color-primary)]/10 text-[var(--color-primary)] uppercase tracking-wider">
+                            Selected
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] font-semibold text-[var(--color-text-muted)]">
+                        <span className="flex items-center gap-1"><Clock size={12} /> {s.departure_time}</span>
+                        <span className="flex items-center gap-1"><Users size={12} /> {s.seats_taken ?? 0}/{s.capacity} booked</span>
+                        <span className="flex items-center gap-1"><Navigation size={12} /> {sBookings.filter(b => b.status === 'scanned').length} scanned</span>
+                      </div>
+                    </div>
+                    <div className="md:ml-auto">
+                      <span className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                        s.status === 'full' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+                      }`}>
+                        {s.status}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Passenger list for selected shuttle */}
+        {selected && (
+          <div className="lg:col-span-12 bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-sm">
+            <div className="p-5 border-b border-[var(--color-border)] flex items-center justify-between">
+              <h4 className="font-black text-[var(--color-primary-dark)]">
+                Passengers — {activeShuttle?.name} ({shuttleBookings.length} bookings)
+              </h4>
+            </div>
+            {shuttleBookings.length === 0 ? (
+              <div className="p-8 text-center">
+                <Users size={28} className="text-[var(--color-text-muted)] mx-auto mb-2 opacity-30" />
+                <p className="text-sm text-[var(--color-text-muted)]">No bookings for this shuttle today</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-[var(--color-border)]">
+                {shuttleBookings.map(b => (
+                  <div key={b.id} className="flex items-center justify-between px-5 py-4 hover:bg-[var(--color-bg-soft,#f8fafc)] transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] font-black text-sm">
+                        {b.seat_number}
+                      </div>
+                      <div>
+                        <p className="font-black text-sm text-[var(--color-primary-dark)]">Seat {b.seat_number}</p>
+                        {b.departure && b.destination && (
+                          <p className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-1">
+                            <MapPin size={10} /> {b.departure} → {b.destination}
+                          </p>
+                        )}
+                        <p className="text-[10px] text-[var(--color-text-muted)]">+237 {b.phone}</p>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${getStatusStyle(b.status)}`}>
+                      {b.status === 'scanned' ? '✓ Boarded' : 'Awaiting'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

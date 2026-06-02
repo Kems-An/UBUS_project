@@ -1,213 +1,196 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Search, 
-  Bus, 
-  ChevronDown, 
- 
-  MapPin, 
-  
-} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bus, Clock, Users, Search, CheckCircle2, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
-type RouteStatus = 'On Time' | 'Delayed' | 'Full' | 'Cancelled';
+const SUPABASE_URL    = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-interface Schedule {
-  departure: string;
-  arrival: string;
-  seats: number;
-}
-
-interface Route {
-  id: number;
+interface Shuttle {
+  id: string;
   name: string;
-  from: string;
-  to: string;
-  frequency: string;
-  stops: number;
-  status: RouteStatus;
-  schedules: Schedule[];
-  tags: string[];
+  route: string;
+  capacity: number;
+  departure_time: string;
+  status: string;
+  seats_taken?: number;
 }
 
-const ROUTES: Route[] = [
-  {
-    id: 1,
-    name: 'Science District Express',
-    from: 'Main Gate Station',
-    to: 'Science Block', // Shortened for mobile width
-    frequency: '15 mins',
-    stops: 8,
-    status: 'On Time',
-    tags: ['Express'],
-    schedules: [
-      { departure: '07:30 AM', arrival: '07:52 AM', seats: 12 },
-      { departure: '07:45 AM', arrival: '08:07 AM', seats: 6 },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Campus Night Loop',
-    from: 'Student Union',
-    to: 'North Halls',
-    frequency: '30 mins',
-    stops: 6,
-    status: 'On Time',
-    tags: ['Night'],
-    schedules: [
-      { departure: '08:00 PM', arrival: '08:28 PM', seats: 20 },
-    ],
-  },
-];
+export default function RouteSchedulePage() {
+  const [shuttles,   setShuttles]   = useState<Shuttle[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [search,     setSearch]     = useState('');
 
-function StatusBadge({ status }: { status: RouteStatus }) {
-  const styles = {
-    'On Time': 'bg-emerald-50 text-emerald-700 border-emerald-100',
-    'Delayed': 'bg-amber-50 text-amber-700 border-amber-100',
-    'Full': 'bg-slate-50 text-slate-700 border-slate-100',
-    'Cancelled': 'bg-rose-50 text-rose-700 border-rose-100',
+  useEffect(() => { fetchShuttles(); }, []);
+
+  const fetchShuttles = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+
+    const [sRes, bRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/shuttles?order=departure_time.asc&select=*`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+      }),
+      fetch(`${SUPABASE_URL}/rest/v1/bookings?status=in.(confirmed,scanned)&select=shuttle_id`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+      }),
+    ]);
+
+    const sData: Shuttle[] = await sRes.json();
+    const bData: any[]     = await bRes.json();
+
+    if (Array.isArray(sData)) {
+      const takenMap: { [id: string]: number } = {};
+      if (Array.isArray(bData)) {
+        bData.forEach(b => {
+          if (b.shuttle_id) takenMap[b.shuttle_id] = (takenMap[b.shuttle_id] || 0) + 1;
+        });
+      }
+      setShuttles(sData.map(s => ({ ...s, seats_taken: takenMap[s.id] || 0 })));
+    }
+
+    setLoading(false);
+    setRefreshing(false);
+  };
+
+  const filtered = shuttles.filter(s =>
+    s.name?.toLowerCase().includes(search.toLowerCase()) ||
+    s.route?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const getStatusIcon = (s: Shuttle) => {
+    const available = s.capacity - (s.seats_taken ?? 0);
+    if (s.status === 'maintenance') return <AlertCircle size={14} className="text-amber-500" />;
+    if (available === 0 || s.status === 'full') return <XCircle size={14} className="text-rose-500" />;
+    return <CheckCircle2 size={14} className="text-emerald-500" />;
+  };
+
+  const getStatusLabel = (s: Shuttle) => {
+    const available = s.capacity - (s.seats_taken ?? 0);
+    if (s.status === 'maintenance') return { label: 'Maintenance', cls: 'bg-amber-50 text-amber-700 border-amber-100' };
+    if (available === 0 || s.status === 'full') return { label: 'Full',  cls: 'bg-rose-50 text-rose-700 border-rose-100' };
+    return { label: 'Available', cls: 'bg-emerald-50 text-emerald-700 border-emerald-100' };
+  };
+
+  const getCapacityBar = (s: Shuttle) => {
+    const pct = Math.round(((s.seats_taken ?? 0) / s.capacity) * 100);
+    const color = pct > 80 ? 'bg-rose-400' : pct > 50 ? 'bg-amber-400' : 'bg-emerald-400';
+    return { pct, color };
   };
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider whitespace-nowrap ${styles[status]}`}>
-      {status}
-    </span>
-  );
-}
+    <div className="pt-6 pb-12 px-4 sm:px-8 lg:px-12 max-w-5xl mx-auto animate-in fade-in duration-300">
 
-export default function RoutesSchedulePage() {
-  const navigate = useNavigate();
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<RouteStatus | 'All'>('All');
-  const [expandedRoute, setExpandedRoute] = useState<number | null>(1);
-
-  const filtered = ROUTES.filter(r => {
-    const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase()) ||
-                          r.from.toLowerCase().includes(search.toLowerCase()) ||
-                          r.to.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus = statusFilter === 'All' || r.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  return (
-    /* Added overflow-x-hidden to the root and w-screen/max-w-full mix to ensure no bleed */
-    <div className="w-full max-w-full overflow-x-hidden px-4 py-6 animate-in fade-in duration-500">
-      
-      <header className="mb-6">
-        <div className="flex items-center gap-2 text-[var(--color-primary)] mb-1">
-            <Bus size={16} />
-            <span className="text-[10px] font-black uppercase tracking-widest">Campus Transit</span>
-        </div>
-        <h2 className="text-2xl font-black tracking-tight text-[var(--color-primary-dark)]">
-          Routes
+      {/* Header */}
+      <header className="mb-8">
+        <p className="text-[10px] font-black text-[var(--color-primary)] uppercase tracking-[0.2em]">
+          Live Schedule
+        </p>
+        <h2 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight mt-1">
+          Shuttle Schedule
         </h2>
+        <p className="text-xs text-[var(--color-text-muted)] font-medium mt-1">
+          Real-time availability of all campus shuttles
+        </p>
       </header>
 
-      {/* Search & Filters */}
-      <div className="flex flex-col gap-3 mb-6">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-white border border-[var(--color-border)] outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20"
+      {/* Search + Refresh */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="relative flex-1 max-w-sm">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search shuttles or routes..."
+            className="w-full pl-9 pr-4 py-3 border border-[var(--color-border)] rounded-xl text-sm outline-none focus:border-[var(--color-primary)] transition-colors"
           />
         </div>
-        
-        {/* Filter bar with no-scrollbar and touch-action-pan-x */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 touch-pan-x">
-          {(['All', 'On Time', 'Delayed', 'Cancelled'] as const).map(s => ( 
-            <button
-              key={s}
-              onClick={() => setStatusFilter(s)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold whitespace-nowrap border transition-all ${
-                statusFilter === s 
-                ? 'bg-[var(--color-primary-dark)] text-white border-transparent' 
-                : 'bg-white text-gray-500 border-gray-100'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
+        <button onClick={() => fetchShuttles(true)} disabled={refreshing}
+          className="flex items-center gap-2 px-4 py-3 border border-[var(--color-border)] bg-white rounded-xl text-xs font-black uppercase tracking-widest text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors">
+          <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+          Refresh
+        </button>
       </div>
 
-      {/* Routes List */}
-      <div className="space-y-3">
-        {filtered.map(route => {
-          const isExpanded = expandedRoute === route.id;
-          return (
-            <div 
-              key={route.id} 
-              className={`rounded-xl bg-white border transition-all overflow-hidden ${
-                isExpanded ? 'border-[var(--color-primary)] shadow-md' : 'border-gray-100'
-              }`}
-            >
-              <button 
-                onClick={() => setExpandedRoute(isExpanded ? null : route.id)} 
-                className="w-full p-4"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-                      isExpanded ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-50 text-gray-400'
-                    }`}>
-                      <Bus size={20} strokeWidth={2} />
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        {[
+          { label: 'Total Shuttles', value: shuttles.length },
+          { label: 'Available',      value: shuttles.filter(s => (s.capacity - (s.seats_taken ?? 0)) > 0 && s.status !== 'maintenance').length },
+          { label: 'Fully Booked',   value: shuttles.filter(s => (s.capacity - (s.seats_taken ?? 0)) === 0 || s.status === 'full').length },
+        ].map((s, i) => (
+          <div key={i} className="bg-white border border-[var(--color-border)] rounded-2xl p-5 shadow-sm text-center">
+            <p className="text-2xl font-black text-[var(--color-primary-dark)]">{loading ? '...' : s.value}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] mt-1">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Shuttle Cards */}
+      {loading ? (
+        <div className="py-16 text-center">
+          <div className="w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-[var(--color-text-muted)] mt-3">Loading schedule...</p>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="py-16 text-center bg-white border border-[var(--color-border)] rounded-2xl">
+          <Bus size={32} className="text-[var(--color-text-muted)] mx-auto mb-3 opacity-30" />
+          <p className="font-bold text-[var(--color-primary-dark)]">No shuttles found</p>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">
+            {shuttles.length === 0 ? 'Admin has not added any shuttles yet.' : 'Try a different search term.'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map(s => {
+            const { pct, color }      = getCapacityBar(s);
+            const { label, cls }      = getStatusLabel(s);
+            const available           = s.capacity - (s.seats_taken ?? 0);
+
+            return (
+              <div key={s.id}
+                className="bg-white border border-[var(--color-border)] rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary-dark)] text-white flex flex-col items-center justify-center shrink-0">
+                      <span className="text-[8px] font-bold opacity-60 uppercase">Bus</span>
+                      <span className="text-sm font-black leading-tight">{s.name.replace('Shuttle ', '#')}</span>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-sm text-[var(--color-primary-dark)] truncate">{route.name}</h3>
-                      <div className="flex items-center gap-1 text-[10px] text-gray-400 mt-0.5">
-                          <MapPin size={10} />
-                          <span className="truncate">{route.to}</span>
-                          <StatusBadge status={route.status} />
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-black text-base text-[var(--color-primary-dark)]">{s.name}</h4>
+                        <span className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${cls}`}>
+                          {getStatusIcon(s)} {label}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[var(--color-text-muted)] font-medium mt-1">{s.route || 'Campus Route'}</p>
+                      <div className="flex items-center gap-4 mt-2">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--color-text-muted)]">
+                          <Clock size={12} /> {s.departure_time}
+                        </span>
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--color-text-muted)]">
+                          <Users size={12} /> {s.seats_taken ?? 0}/{s.capacity} taken
+                        </span>
+                        <span className={`text-xs font-black ${available > 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                          {available} left
+                        </span>
+                      </div>
+                      {/* Capacity bar */}
+                      <div className="mt-2 w-48 h-1.5 bg-[var(--color-bg-soft,#f1f5f9)] rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
                       </div>
                     </div>
                   </div>
-                  <ChevronDown size={16} className={`text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                </div>
-              </button>
-              
-              {isExpanded && (
-                <div className="border-t border-gray-50 bg-gray-50/20">
-                  {/* Container for table that allows local scroll ONLY if needed */}
-                  <div className="overflow-x-auto w-full">
-                    <table className="w-full text-left table-fixed">
-                      <thead className="bg-gray-50/50">
-                        <tr className="text-[9px] font-bold uppercase text-gray-400">
-                          <th className="px-4 py-2 w-[40%]">Time</th>
-                          <th className="px-4 py-2 w-[30%] text-center">Seats</th>
-                          <th className="px-4 py-2 w-[30%] text-right">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {route.schedules.map((sched, idx) => (
-                          <tr key={idx}>
-                            <td className="px-4 py-3">
-                                <div className="text-xs font-bold text-gray-700">{sched.departure}</div>
-                            </td>
-                            <td className="px-4 py-3 text-center">
-                                <span className="text-[10px] font-bold text-emerald-600">{sched.seats}</span>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <button 
-                                onClick={() => navigate('/dashboard/student/payment')}
-                                className="px-3 py-1 rounded-md bg-[var(--color-primary-dark)] text-white font-bold text-[10px]"
-                              >
-                                Book
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+
+                  <div className="flex items-center gap-2 sm:ml-auto">
+                    <div className="text-right">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)]">Capacity</p>
+                      <p className="text-lg font-black text-[var(--color-primary-dark)]">{s.capacity} seats</p>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
