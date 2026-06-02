@@ -233,7 +233,7 @@ function WhyChooseUs() {
               We Got you Covered
             </p>
             <p className="text-xl sm:text-4xl text-[var(--color-text-main)] font-bold">
-              Active 24/7
+              Active 6/7
             </p>
           </div>
 

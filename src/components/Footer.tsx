@@ -36,12 +36,17 @@ export default function Footer() {
 
           {/* Right Block: Minimalist Metadata Matrix */}
           <div className="text-left sm:text-right font-sans">
-            <p className="text-xl font-black tracking-tight text-white mb-1">
-              +1 234 567 89 00
-            </p>
-            <p className="text-sm font-bold text-neutral-400 hover:text-[var(--color-primary)] transition-colors cursor-pointer">
-              support@ubus.com
-            </p>
+            <div className="text-left sm:text-right font-sans space-y-2">
+              <a href="https://wa.me/237674XXXXXX" target="_blank" rel="noopener noreferrer"
+                className="flex items-center justify-end gap-2 text-white hover:text-emerald-400 transition-colors group">
+                <span className="text-sm font-black">+237 674 XXX XXX</span>
+                <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">WhatsApp</span>
+              </a>
+              <a href="mailto:angelakemugne@gmail.com"
+                className="block text-sm font-bold text-neutral-400 hover:text-[var(--color-primary)] transition-colors">
+                angelakemugne@gmail.com
+              </a>
+            </div>
           </div>
         </div>
 
@@ -76,23 +81,29 @@ export default function Footer() {
             </address>
           </div>
 
-          {/* Column 4: Relational Route Gateways */}
+          {/* Column 4: Contact Links */}
           <div>
-            <h4 className="text-white text-sm font-extrabold tracking-tight mb-4">Follow Us</h4>
-            <ul className="space-y-2 text-xs font-bold">
+            <h4 className="text-white text-sm font-extrabold tracking-tight mb-4">Contact Us</h4>
+            <ul className="space-y-3 text-xs font-bold">
               <li>
-                <a href="#" className="text-neutral-400 hover:text-white transition-colors duration-200 block">
-                  Digital Matrix Logs
+                <a href="https://wa.me/237687663134" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-neutral-400 hover:text-emerald-400 transition-colors duration-200">
+                  <span className="w-4 h-4 rounded bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-[8px]">W</span>
+                  WhatsApp Support
                 </a>
               </li>
               <li>
-                <a href="#" className="text-neutral-400 hover:text-white transition-colors duration-200 block">
-                  Internal Fleet Updates
+                <a href="mailto:angelakemugne@gmail.com"
+                  className="flex items-center gap-2 text-neutral-400 hover:text-blue-400 transition-colors duration-200">
+                  <span className="w-4 h-4 rounded bg-blue-500/20 flex items-center justify-center text-blue-400 text-[8px]">@</span>
+                  Email Admin
                 </a>
               </li>
               <li>
-                <a href="#" className="text-neutral-400 hover:text-white transition-colors duration-200 block">
-                  System Status Network
+                <a href="https://mail.google.com/mail/?view=cm&to=angelakemugne@gmail.com&su=UBUS%20Enquiry" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-neutral-400 hover:text-red-400 transition-colors duration-200">
+                  <span className="w-4 h-4 rounded bg-red-500/20 flex items-center justify-center text-red-400 text-[8px]">G</span>
+                  Compose in Gmail
                 </a>
               </li>
             </ul>
@@ -115,3 +126,5 @@ export default function Footer() {
     </footer>
   );
 }
+
+
