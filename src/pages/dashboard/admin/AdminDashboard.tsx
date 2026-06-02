@@ -14,7 +14,7 @@ interface Booking {
   phone: string;
   provider: string;
   amount: number;
-  status: string;
+  status: string; 
   reference: string;
   created_at: string;
   user_id: string;

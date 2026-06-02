@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Bus, UserCheck, UserPlus, Clock, CircleDollarSign,
-  Search, Edit3, Trash2, Filter, ChevronRight,
-  MapPin, X, CheckCircle2, AlertCircle
+  Bus, UserCheck,Clock, CircleDollarSign,
+  Search,Trash2, CheckCircle2, AlertCircle
 } from 'lucide-react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;

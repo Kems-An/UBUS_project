@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, Smartphone, MapPin } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Smartphone } from 'lucide-react';
 import { initiatePayment } from '../../../../lib/campay';
 
 const SUPABASE_URL   = import.meta.env.VITE_SUPABASE_URL;
@@ -18,9 +18,6 @@ function getCurrentUser() {
   } catch { return null; }
 }
 
-function buildIntegrityStamp(bookingId: string, seat: string, bookedAt: string) {
-  return btoa(`${bookingId}|${seat}|${bookedAt}`).slice(0, 16);
-}
 
 export default function PaymentPage() {
   const location = useLocation();

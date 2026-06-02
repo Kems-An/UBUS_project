@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { 
-  Navigation, CheckCircle2, Search, Clock, 
+  Navigation, Clock, 
   Bus, MapPin, Users, RefreshCw, QrCode
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

@@ -10,7 +10,7 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 interface Booking {
   id: string;
   reference: string;
-  seat_number: string;
+  seat_number: string; 
   phone: string;
   provider: string;
   amount: number;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   MapPin, TrendingUp, Calendar, Route, Clock, 
-  Bus, Search, Users, Filter, Layers, RefreshCw
+  Bus, Search, Users, Layers, RefreshCw
 } from 'lucide-react';
 
 const SUPABASE_URL    = import.meta.env.VITE_SUPABASE_URL;

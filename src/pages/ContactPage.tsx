@@ -133,7 +133,7 @@ const ContactUs: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] leading-none mb-1">{channel.title}</h4>
-                  <p className="text-sm font-black text-[var(--color-primary-dark)] leading-tight mb-0.5 group-hover:text-[var(--color-primary)] transition-colors">
+                  <p className="text-sm font-black text-[var(--color-neutral-600)] leading-tight mb-0.5 group-hover:text-[var(--color-primary)] transition-colors">
                     {channel.detail}
                   </p>
                   <span className="text-[11px] font-semibold text-neutral-400 block">{channel.label}</span>
@@ -221,7 +221,7 @@ const ContactUs: React.FC = () => {
               </div>
 
               <button type="submit"
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white shadow-md hover:opacity-95 transition-all active:scale-98 mt-2 bg-[var(--color-primary)] hover:bg-emerald-700"
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white shadow-md hover:opacity-95 transition-all active:scale-98 mt-2 bg-[var(--color-primary-dark)] hover:bg-[var(--color-primary)]"
               >
                 <Send size={14} /> Send via WhatsApp
               </button>
