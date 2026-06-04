@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Menu } from 'lucide-react';
+import { X, Menu, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import logo from "../assets/images/logo.png";
 
 const NAV_ITEMS = [
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user } = useAuth(); // Read existing active authentication session
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 15);
@@ -21,6 +23,15 @@ export default function Navbar() {
   }, []);
 
   const closeMenu = () => setMenuOpen(false);
+
+  // Compute precise dashboard location destination fallback sequence links based on role
+  const getDashboardLink = () => {
+    if (!user) return '/login';
+    const role = user.role?.toLowerCase();
+    if (role === 'admin') return '/dashboard/admin';
+    if (role === 'driver') return '/dashboard/driver';
+    return '/dashboard/student';
+  };
 
   return (
     <nav
@@ -70,19 +81,32 @@ export default function Navbar() {
 
         {/* Action Button Triggers */}
         <div className="hidden md:flex items-center gap-4 shrink-0">
-          <Link
-            to="/login"
-            className="text-xs font-black uppercase tracking-wider px-4 py-2 text-[var(--color-text-main)] hover:text-[var(--color-primary-dark)] transition-colors"
-          >
-            Log in
-          </Link>
-          <Link
-            to="/register"
-            className="px-5 py-2 text-xs font-black uppercase tracking-wider text-white rounded-full transition-all hover:scale-103 active:scale-98 shadow-sm"
-            style={{ background: 'var(--color-primary-dark)' }}
-          >
-            Get Started
-          </Link>
+          {user ? (
+            <Link
+              to={getDashboardLink()}
+              className="px-5 py-2 text-xs font-black uppercase tracking-wider text-white rounded-full transition-all hover:scale-103 active:scale-98 shadow-sm flex items-center gap-2"
+              style={{ background: 'var(--color-primary-dark)' }}
+            >
+              <LayoutDashboard size={14} />
+              View Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-xs font-black uppercase tracking-wider px-4 py-2 text-[var(--color-text-main)] hover:text-[var(--color-primary-dark)] transition-colors"
+              >
+                Log in
+              </Link>
+              <Link
+                to="/register"
+                className="px-5 py-2 text-xs font-black uppercase tracking-wider text-white rounded-full transition-all hover:scale-103 active:scale-98 shadow-sm"
+                style={{ background: 'var(--color-primary-dark)' }}
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Hamburger Trigger for Mobile (Hidden automatically when menu opens) */}
@@ -152,21 +176,35 @@ export default function Navbar() {
 
               {/* Action Trigger Buttons */}
               <div className="flex flex-col gap-2 pt-4 border-t border-[var(--color-border)]/60">
-                <Link 
-                  to="/login" 
-                  onClick={closeMenu}
-                  className="w-full py-3.5 text-center text-xs font-black uppercase tracking-widest border border-[var(--color-border)] text-[var(--color-primary-dark)] rounded-xl hover:bg-[var(--color-bg-soft)] transition-colors"
-                >
-                  Log In
-                </Link>
-                <Link 
-                  to="/register" 
-                  onClick={closeMenu}
-                  className="w-full py-4 text-center text-xs font-black uppercase tracking-widest text-white rounded-xl shadow-md active:scale-98 transition-all"
-                  style={{ background: 'var(--color-primary-dark)' }}
-                >
-                  Get Started
-                </Link>
+                {user ? (
+                  <Link 
+                    to={getDashboardLink()} 
+                    onClick={closeMenu}
+                    className="w-full py-4 text-center text-xs font-black uppercase tracking-widest text-white rounded-xl shadow-md active:scale-98 transition-all flex items-center justify-center gap-2"
+                    style={{ background: 'var(--color-primary-dark)' }}
+                  >
+                    <LayoutDashboard size={14} />
+                    View Dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link 
+                      to="/login" 
+                      onClick={closeMenu}
+                      className="w-full py-3.5 text-center text-xs font-black uppercase tracking-widest border border-[var(--color-border)] text-[var(--color-primary-dark)] rounded-xl hover:bg-[var(--color-bg-soft)] transition-colors"
+                    >
+                      Log In
+                    </Link>
+                    <Link 
+                      to="/register" 
+                      onClick={closeMenu}
+                      className="w-full py-4 text-center text-xs font-black uppercase tracking-widest text-white rounded-xl shadow-md active:scale-98 transition-all"
+                      style={{ background: 'var(--color-primary-dark)' }}
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           </motion.div>

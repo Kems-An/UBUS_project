@@ -1,8 +1,41 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Navigation, MapPin, ArrowRight, Circle, LocateFixed, AlertCircle } from 'lucide-react';
+import { Search, Navigation, MapPin, ArrowRight, Circle, LocateFixed, AlertCircle, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UB_CENTER = { lat: 4.1549, lng: 9.2884 };
+
+// University of Buea Blocks array for the dropdowns
+const UB_LOCATIONS = [
+  "UB Junction",
+  "Central Administration (Central Admin)",
+  "Faculty of Science (FS Block)",
+  "Faculty of Arts (FA Block)",
+  "Faculty of Education (FED Block)",
+  "Faculty of Social and Management Sciences (FSMS Block)",
+  "Faculty of Law and Political Science (FLPS Block)",
+  "Faculty of Engineering and Technology (FET Block)",
+  "Faculty of Agriculture and Veterinary Medicine (FAVM Block)",
+  "Advanced School of Translators and Interpreters (ASTI)",
+  "College of Technology (COT)",
+  "Amphi 750",
+  "U Block",
+  "ClassRoom Block",
+  "Open Amphitheatre",
+  "UB Main Library",
+  "Annex Library",
+  "Cultural Village",
+  "Resteau (UB Restaurant)",
+  "Health Centre",
+  "UB Library",
+  "Science Laboratories",
+  "Administrative Block",
+  "Senate Building",
+  "UB Finance",
+  "IT Center",
+  "UB Market",
+  "Girls Hostel",
+  "Security Post",
+];
 
 export default function RouteSelectionPage() {
   const navigate    = useNavigate();
@@ -10,12 +43,33 @@ export default function RouteSelectionPage() {
   const depInputRef = useRef<HTMLInputElement>(null);
   const destInputRef= useRef<HTMLInputElement>(null);
 
+  // Added container refs to detect clicks outside the dropdowns
+  const depContainerRef  = useRef<HTMLDivElement>(null);
+  const destContainerRef = useRef<HTMLDivElement>(null);
+
   const [departure,   setDeparture]   = useState('');
   const [destination, setDestination] = useState('');
   const [error,       setError]       = useState('');
 
+  // Dropdown visibility states
+  const [showDepDropdown, setShowDepDropdown]   = useState(false);
+  const [showDestDropdown, setShowDestDropdown] = useState(false);
+
+  // ── Close dropdowns on clicking outside ──
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (depContainerRef.current && !depContainerRef.current.contains(event.target as Node)) {
+        setShowDepDropdown(false);
+      }
+      if (destContainerRef.current && !destContainerRef.current.contains(event.target as Node)) {
+        setShowDestDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // ── Init map + Places autocomplete using the global google script ──
-  // No useJsApiLoader — loaded once in main.tsx
   useEffect(() => {
     const init = () => {
       const g = (window as any).google?.maps;
@@ -43,6 +97,7 @@ export default function RouteSelectionPage() {
         auto.addListener('place_changed', () => {
           const p = auto.getPlace();
           setDeparture(p.name || p.formatted_address || '');
+          setShowDepDropdown(false);
         });
       }
 
@@ -51,6 +106,7 @@ export default function RouteSelectionPage() {
         auto.addListener('place_changed', () => {
           const p = auto.getPlace();
           setDestination(p.name || p.formatted_address || '');
+          setShowDestDropdown(false);
         });
       }
     };
@@ -82,6 +138,15 @@ export default function RouteSelectionPage() {
       state: { departure: dep, destination: dest },
     });
   };
+
+  // Live filter functions based on what the student types
+  const filteredDepLocations = UB_LOCATIONS.filter(loc =>
+    loc.toLowerCase().includes(departure.toLowerCase())
+  );
+
+  const filteredDestLocations = UB_LOCATIONS.filter(loc =>
+    loc.toLowerCase().includes(destination.toLowerCase())
+  );
 
   return (
     <div className="pt-6 pb-12 px-8 lg:px-12 max-w-7xl mx-auto">
@@ -116,38 +181,108 @@ export default function RouteSelectionPage() {
               <div className="absolute left-[23px] top-12 bottom-12 w-0.5 border-l-2 border-dashed border-[var(--color-border)] z-0" />
 
               {/* Departure */}
-              <div className="relative z-10 flex items-center gap-4">
+              <div ref={depContainerRef} className="relative z-20 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary)] text-white flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
                   <LocateFixed size={20} />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 relative">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] ml-1">
                     Departure Point
                   </label>
-                  <input ref={depInputRef} type="text"
-                    placeholder="Enter your location..."
-                    defaultValue={departure}
-                    onChange={e => setDeparture(e.target.value)}
-                    className="w-full mt-1 bg-[var(--color-bg-muted)] border border-[var(--color-border)] rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:ring-2 ring-[var(--color-primary)]/20 transition-all"
-                  />
+                  <div className="relative">
+                    <input ref={depInputRef} type="text"
+                      placeholder="Enter your location..."
+                      value={departure}
+                      onFocus={() => setShowDepDropdown(true)}
+                      onChange={e => {
+                        setDeparture(e.target.value);
+                        setShowDepDropdown(true);
+                      }}
+                      className="w-full mt-1 bg-[var(--color-bg-muted)] border border-[var(--color-border)] rounded-xl py-3 pl-4 pr-10 text-sm font-bold focus:outline-none focus:ring-2 ring-[var(--color-primary)]/20 transition-all"
+                    />
+                    <ChevronDown 
+                      size={16} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] cursor-pointer" 
+                      onClick={() => setShowDepDropdown(!showDepDropdown)}
+                    />
+                  </div>
+
+                  {/* Departure Dropdown Options */}
+                  {showDepDropdown && (
+                    <div className="absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-[var(--color-border)] rounded-xl shadow-xl z-50 py-1">
+                      {filteredDepLocations.length > 0 ? (
+                        filteredDepLocations.map((loc) => (
+                          <div
+                            key={loc}
+                            onClick={() => {
+                              setDeparture(loc);
+                              setShowDepDropdown(false);
+                            }}
+                            className="px-4 py-2.5 text-xs font-bold text-[var(--color-primary-dark)] hover:bg-[var(--color-bg-muted)] cursor-pointer transition-colors"
+                          >
+                            {loc}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2.5 text-xs text-[var(--color-text-muted)] italic">
+                          No matching locations
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Destination */}
-              <div className="relative z-10 flex items-center gap-4">
+              <div ref={destContainerRef} className="relative z-10 flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-white border-2 border-[var(--color-primary)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
                   <MapPin size={20} />
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 relative">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] ml-1">
                     Destination
                   </label>
-                  <input ref={destInputRef} type="text"
-                    placeholder="Where are you going?"
-                    defaultValue={destination}
-                    onChange={e => setDestination(e.target.value)}
-                    className="w-full mt-1 bg-[var(--color-bg-muted)] border border-[var(--color-border)] rounded-xl py-3 px-4 text-sm font-bold focus:outline-none focus:ring-2 ring-[var(--color-primary)]/20 transition-all"
-                  />
+                  <div className="relative">
+                    <input ref={destInputRef} type="text"
+                      placeholder="Where are you going?"
+                      value={destination}
+                      onFocus={() => setShowDestDropdown(true)}
+                      onChange={e => {
+                        setDestination(e.target.value);
+                        setShowDestDropdown(true);
+                      }}
+                      className="w-full mt-1 bg-[var(--color-bg-muted)] border border-[var(--color-border)] rounded-xl py-3 pl-4 pr-10 text-sm font-bold focus:outline-none focus:ring-2 ring-[var(--color-primary)]/20 transition-all"
+                    />
+                    <ChevronDown 
+                      size={16} 
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] cursor-pointer"
+                      onClick={() => setShowDestDropdown(!showDestDropdown)}
+                    />
+                  </div>
+
+                  {/* Destination Dropdown Options */}
+                  {showDestDropdown && (
+                    <div className="absolute left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white border border-[var(--color-border)] rounded-xl shadow-xl z-50 py-1">
+                      {filteredDestLocations.length > 0 ? (
+                        filteredDestLocations.map((loc) => (
+                          <div
+                            key={loc}
+                            onClick={() => {
+                              setDestination(loc);
+                              setShowDestDropdown(false);
+                            }}
+                            className="px-4 py-2.5 text-xs font-bold text-[var(--color-primary-dark)] hover:bg-[var(--color-bg-muted)] cursor-pointer transition-colors"
+                          >
+                            {loc}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2.5 text-xs text-[var(--color-text-muted)] italic">
+                          No matching locations
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

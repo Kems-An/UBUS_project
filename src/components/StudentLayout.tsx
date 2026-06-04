@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
   LayoutDashboard, Bus, Ticket, UserCircle, LogOut,
-  Search, Menu, X, ShieldCheck
+  Search, Menu, X, ShieldCheck, Globe
 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
 import { useStudentNotifications } from '../hooks/useNotifications';
@@ -15,11 +15,19 @@ const NAV_ITEMS = [
   { label: 'Profile',   icon: <UserCircle size={18} />,      to: '/dashboard/student/profile'   },
 ];
 
+const EXTERNAL_NAV_ITEMS = [
+  { label: 'Home',      to: '/' },
+  { label: 'About Us', to: '/about' },
+  { label: 'Contact',  to: '/contact' },
+];
+
 export default function StudentLayout() {
   const { user, logout } = useAuth();
   const navigate         = useNavigate();
   const location         = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLandingLinksOpen, setIsLandingLinksOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   // ── Real-time notifications for this student ──
   const { notifications, unreadCount, markAllRead, dismiss } =
@@ -27,7 +35,16 @@ export default function StudentLayout() {
 
   const currentTitle = NAV_ITEMS.find(item => item.to === location.pathname)?.label || 'Overview';
 
-  function handleLogout() { logout(); navigate('/login'); }
+  function handleLogoutClick() {
+    setIsLogoutModalOpen(true);
+  }
+
+  function confirmLogout() {
+    setIsLogoutModalOpen(false);
+    logout();
+    navigate('/login');
+  }
+
   const closeMenu = () => setIsMobileMenuOpen(false);
 
   return (
@@ -94,7 +111,7 @@ export default function StudentLayout() {
                 </div>
               </div>
             </div>
-            <button onClick={handleLogout}
+            <button onClick={handleLogoutClick}
               className="w-full flex items-center justify-center gap-2 py-3 text-xs font-black rounded-xl bg-white border border-[var(--color-border)] text-[var(--color-primary-dark)] hover:bg-[var(--color-bg-soft)] transition-all shadow-2xs">
               <LogOut size={14} strokeWidth={2.5} /> Sign Out
             </button>
@@ -112,11 +129,40 @@ export default function StudentLayout() {
             <h2 className="text-xs font-black text-[var(--color-text-muted)] uppercase tracking-[0.2em]">{currentTitle}</h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 relative">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white border border-[var(--color-border)] rounded-full shadow-2xs mr-1">
               <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] animate-pulse" />
               <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide">System Live</span>
             </div>
+
+            {/* ── Desktop & Mobile Landing Navigation Menu ── */}
+            <div className="relative">
+              <button 
+                onClick={() => setIsLandingLinksOpen(!isLandingLinksOpen)}
+                className="h-9 px-3 gap-1.5 rounded-xl bg-white border border-[var(--color-border)] flex items-center justify-center shadow-2xs text-xs font-black text-[var(--color-primary-dark)] hover:bg-[var(--color-bg-soft)] transition-colors"
+              >
+                <Globe size={15} className="text-[var(--color-primary)]" />
+                <span>Portal Menu</span>
+              </button>
+
+              {isLandingLinksOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsLandingLinksOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-[var(--color-border)] rounded-2xl shadow-xl p-2 z-50 flex flex-col gap-1">
+                    {EXTERNAL_NAV_ITEMS.map((item) => (
+                      <Link
+                        key={item.label}
+                        to={item.to}
+                        className="w-full text-left px-4 py-2.5 text-xs font-black text-[var(--color-text-main)] hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-primary-dark)] rounded-xl transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
             {/* ── Notification Bell ── */}
             <NotificationBell
               notifications={notifications}
@@ -134,6 +180,37 @@ export default function StudentLayout() {
           <Outlet />
         </div>
       </main>
+
+      {/* ── Modern Sign Out Confirmation Modal ── */}
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-[var(--color-primary-dark)]/30 backdrop-blur-sm transition-opacity" onClick={() => setIsLogoutModalOpen(false)} />
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full border border-[var(--color-border)] shadow-2xl relative z-10 text-center transform transition-all scale-100">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--color-bg-soft)] text-[var(--color-primary)] flex items-center justify-center mx-auto mb-4 border border-[var(--color-border)]">
+              <LogOut size={22} strokeWidth={2.5} />
+            </div>
+            <h3 className="text-base font-black text-[var(--color-primary-dark)] tracking-tight">Confirm Sign Out</h3>
+            <p className="text-xs text-[var(--color-text-muted)] font-medium mt-2 leading-relaxed">
+              Are you sure you want to sign out of your UBUS account session?
+            </p>
+            <div className="grid grid-cols-2 gap-3 mt-6">
+              <button
+                onClick={() => setIsLogoutModalOpen(false)}
+                className="py-3 px-4 text-xs font-black rounded-xl bg-[var(--color-bg-soft)] text-[var(--color-primary-dark)] hover:bg-[var(--color-border)]/50 transition-colors border border-[var(--color-border)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="py-3 px-4 text-xs font-black rounded-xl bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)] transition-colors shadow-xs"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

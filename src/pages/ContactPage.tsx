@@ -247,7 +247,7 @@ const ContactUs: React.FC = () => {
                 className="bg-white border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-2xs">
                 <button onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
                   className="w-full text-left p-6 flex justify-between items-center gap-4 group">
-                  <span className="text-xs sm:text-sm font-bold text-[var(--color-primary-dark)] group-hover:text-[var(--color-primary)] transition-colors">
+                  <span className="text-xs sm:text-sm font-bold text-[var(--color-neutral-600)] group-hover:text-[var(--color-primary)] transition-colors">
                     {faq.q}
                   </span>
                   <span className="text-xl font-light text-[var(--color-border)] group-hover:text-[var(--color-text-muted)] select-none shrink-0">

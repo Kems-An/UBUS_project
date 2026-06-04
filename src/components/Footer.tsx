@@ -37,9 +37,9 @@ export default function Footer() {
           {/* Right Block: Minimalist Metadata Matrix */}
           <div className="text-left sm:text-right font-sans">
             <div className="text-left sm:text-right font-sans space-y-2">
-              <a href="https://wa.me/237674XXXXXX" target="_blank" rel="noopener noreferrer"
+              <a href="https://wa.me/237687663134" target="_blank" rel="noopener noreferrer"
                 className="flex items-center justify-end gap-2 text-white hover:text-emerald-400 transition-colors group">
-                <span className="text-sm font-black">+237 674 XXX XXX</span>
+                <span className="text-sm font-black">+237 687 663 134</span>
                 <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">WhatsApp</span>
               </a>
               <a href="mailto:angelakemugne@gmail.com"
