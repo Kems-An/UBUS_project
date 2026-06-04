@@ -20,6 +20,18 @@ const ContactUs: React.FC = () => {
     transition:  { duration: 0.5, ease: 'easeOut' },
   };
 
+  // Modern stagger configuration for the header text element entry sequences
+  const staggerContainer = {
+    initial: { opacity: 0 },
+    whileInView: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+      }
+    },
+    viewport: { once: true }
+  };
+
   const contactChannels = [
     {
       icon:   <MessageSquare size={20} className="text-emerald-600" />,
@@ -94,17 +106,47 @@ const ContactUs: React.FC = () => {
 
       {/* Header */}
       <section className="py-16 px-6 max-w-7xl mx-auto text-center border-b border-[var(--color-border)]/60">
-        <motion.div  className="max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-bg-soft)] border border-[var(--color-border)] mb-4">
+        <motion.div 
+          className="max-w-2xl mx-auto"
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="whileInView"
+          viewport={{ once: true }}
+        >
+          {/* Badge */}
+          <motion.div 
+            variants={{
+              initial: { opacity: 0, y: 15 },
+              whileInView: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+            }}
+            whileHover={{ scale: 1.02 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-bg-soft)] border border-[var(--color-border)] mb-4 cursor-default select-none"
+          >
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">Communications Network</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-black text-[var(--color-primary-dark)] tracking-tighter leading-none mb-4">
+          </motion.div>
+
+          {/* Heading */}
+          <motion.h1 
+            variants={{
+              initial: { opacity: 0, y: 20 },
+              whileInView: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+            }}
+            className="text-4xl md:text-5xl font-black text-[var(--color-primary-dark)] tracking-tighter leading-none mb-4"
+          >
             Connect with our <span className="text-[var(--color-primary)]">Transit Desk</span>
-          </h1>
-          <p className="text-[var(--color-text-muted)] text-sm font-semibold leading-relaxed">
+          </motion.h1>
+
+          {/* Paragraph */}
+          <motion.p 
+            variants={{
+              initial: { opacity: 0, y: 20 },
+              whileInView: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+            }}
+            className="text-[var(--color-text-muted)] text-sm font-semibold leading-relaxed"
+          >
             Have questions regarding terminal operations, digital pass validation codes, or system maintenance metrics? Drop our dispatch unit a line.
-          </p>
+          </motion.p>
         </motion.div>
       </section>
 

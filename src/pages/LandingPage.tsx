@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+// Pulling in your authentic context hook setup directly
+import { useAuth } from '../context/AuthContext'; // Adjust this path if necessary to point to your context file
+
 import caroussel1 from "../assets/images/caroussel1.jpeg";
 import caroussel2 from "../assets/images/caroussel2.jpeg";
-import hero from "../assets/images/hero.png";
+import ourvision from "../assets/images/our vision.jpg";
 
 // Placeholder setup for your new section's images—adjust paths as needed
 import mola1 from "../assets/images/mola1.jpg"; 
@@ -20,14 +24,18 @@ import {
   Headphones,
   Compass,
   QrCode,
-
-  Star
+  Star,
+  ArrowRight
 } from 'lucide-react';
 
-// ── HERO SECTION (UNTOUCHED) ──
+// ── HERO SECTION ──
 function Hero() {
-  const carouselImages = [caroussel1, caroussel2, hero];
+  const navigate = useNavigate();
+  const carouselImages = [ ourvision, caroussel1, caroussel2 ];
   const [index, setIndex] = useState(0);
+
+  // ── True App Authentication Connection ──
+  const { user, isLoggedIn, isLoading } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -69,19 +77,70 @@ function Hero() {
             Elevate your campus mobility. Access real-time satellite tracking, smart AI scheduling intervals, and secure digital boarding keys straight from your student hub.
           </motion.p>
 
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-wrap gap-4"
-          >
-            <button className="px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white shadow-md hover:opacity-90 transition-all active:scale-98" style={{ background: 'var(--color-primary-dark)' }}>
-              Get Started
-            </button>
-            <button className="bg-white border border-[var(--color-border)] text-[var(--color-primary-dark)] px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-[var(--color-bg-soft)] transition-all active:scale-98">
-              Try Demo
-            </button>
-          </motion.div>
+          {/* Interactive Modern Action Control Hub */}
+          <div className="flex flex-wrap items-center gap-4 min-h-[64px]">
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                // Smooth structural placeholder loading block to prevent asset popping
+                <motion.div 
+                  key="loading-skeleton"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="w-32 h-12 rounded-xl bg-[var(--color-bg-soft)] animate-pulse border border-[var(--color-border)]"
+                />
+              ) : !isLoggedIn || !user ? (
+                // Guest View: Standard onboarding triggers
+                <motion.div
+                  key="guest-actions"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex flex-wrap gap-4"
+                >
+                  <button 
+                    onClick={() => navigate('/register')} 
+                    className="px-8 py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white shadow-md hover:opacity-90 transition-all active:scale-98 cursor-pointer" 
+                    style={{ background: 'var(--color-primary-dark)' }}
+                  >
+                    Get Started
+                  </button>
+                </motion.div>
+              ) : (
+                // Authenticated View: Framer Motion animated responsive status panel card
+                <motion.div
+                  key="authenticated-status"
+                  initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -15, scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  onClick={() => navigate('/dashboard')}
+                  className="inline-flex items-center gap-4 p-2 pr-6 bg-[var(--color-bg-soft)] border border-[var(--color-border)] rounded-2xl group cursor-pointer select-none relative overflow-hidden transition-all duration-300 hover:border-[var(--color-primary)]/50 shadow-2xs hover:shadow-sm"
+                >
+                  {/* Performance-optimized ambient glow effect layer */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--color-primary)]/5 to-transparent -translate-x-full group-hover:animate-shimmer" style={{ animationDuration: '2s' }} />
+                  
+                  <div 
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black text-sm uppercase transition-transform duration-300 group-hover:scale-105 relative z-10"
+                    style={{ background: 'var(--color-primary-dark)' }}
+                  >
+                    {user.full_name ? user.full_name.charAt(0) : (user.email ? user.email.charAt(0) : 'U')}
+                  </div>
+                  
+                  <div className="flex flex-col text-left relative z-10">
+                    <span className="text-[9px] font-black uppercase tracking-wider text-[var(--color-primary)] flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-[var(--color-primary)] animate-ping" />
+                      Welcome back, {user.full_name.split(' ')[0] || 'User'}
+                    </span>
+                    <span className="text-xs font-black text-[var(--color-primary-dark)] flex items-center gap-1.5 mt-0.5">
+                      Go to Dashboard <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1 text-[var(--color-primary)]" />
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* Right Column */}
@@ -212,7 +271,7 @@ function Features() {
   );
 }
 
-// ── NEW SECTION: WHY CHOOSE US ──
+// ── NEW SECTION: WHY CHOOSE US (UNTOUCHED) ──
 function WhyChooseUs() {
   return (
     <section className="bg-white pb-28">
@@ -343,7 +402,7 @@ function Pricing() {
               <span className="text-[var(--color-primary-dark)] text-4xl font-black tracking-tight">100</span>
               <span className="text-[var(--color-text-muted)] font-black text-sm uppercase">FCFA</span>
             </div>
-            <button className="w-full py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all active:scale-98" style={{ background: 'var(--color-primary-dark)' }}>
+            <button className="w-full py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all active:scale-98 cursor-pointer" style={{ background: 'var(--color-primary-dark)' }}>
               Get Weekly Access
             </button>
           </div>
@@ -355,7 +414,7 @@ function Pricing() {
               <span className="text-[var(--color-primary-dark)] text-4xl font-black tracking-tight">1000</span>
               <span className="text-[var(--color-text-muted)] font-black text-sm uppercase">FCFA</span>
             </div>
-            <button className="w-full bg-[var(--color-primary)] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all active:scale-98 shadow-sm">
+            <button className="w-full bg-[var(--color-primary)] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all active:scale-98 shadow-sm cursor-pointer">
               Get Semester Access
             </button>
           </div>
@@ -372,7 +431,6 @@ export default function LandingPage() {
       <Hero />
       <HowItWorks />
       <Features />
-      {/* Mounted perfectly here between Services and Reviews */}
       <WhyChooseUs />
       <Reviews />
       <Pricing />
