@@ -131,30 +131,44 @@ export default function StudentDashboard() {
         </div>
 
         {/* Stats Card */}
-        <div className="md:col-span-4 p-8 rounded-[2rem] bg-[var(--color-primary-dark)] text-white flex flex-col justify-between relative overflow-hidden group">
-          <div className="absolute -right-10 -top-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
-            <Bus size={180} />
-          </div>
-          <div className="relative z-10">
-            <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center mb-4">
-              <TrendingUp size={24} className="text-blue-300" />
-            </div>
-            <h3 className="text-xl font-bold italic">With UBUS!</h3>
-            <p className="text-sm opacity-70 mt-1">
-              {completedTrips > 0 ? `${completedTrips} trips completed` : 'Start booking to track your trips'}
-            </p>
-          </div>
-          <div className="relative z-10 pt-8">
-            <div className="flex items-baseline gap-2">
-              <span className="text-6xl font-black tracking-tighter">{loading ? '...' : totalTrips}</span>
-              <span className="text-[var(--color-primary)] font-bold text-xl">trips</span>
-            </div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-50 mt-1">
-              {loading ? '' : `${totalSpent} XAF spent`}
-            </p>
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40 mt-1">Lifetime Bookings</p>
-          </div>
-        </div>
+<div className="md:col-span-4 p-8 rounded-[2rem] bg-white border border-[var(--color-border)]/60 flex flex-col justify-between relative overflow-hidden group shadow-[0_10px_30px_-10px_rgba(34,197,94,0.12)] hover:shadow-[0_12px_40px_-8px_rgba(var(--color-primary-rgb),0.2)] transition-all duration-500">
+  
+  {/* Ambient background accent decoration */}
+  <div className="absolute inset-0 bg-gradient-to-br from-green-50/20 via-transparent to-[var(--color-primary)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+  {/* Large watermark background bus icon (adjusted opacity for light background) */}
+  <div className="absolute -right-10 -top-10 text-neutral-100 group-hover:text-green-50 group-hover:scale-110 transition-all duration-700 pointer-events-none">
+    <Bus size={180} />
+  </div>
+  
+  {/* Top Section */}
+  <div className="relative z-10">
+    <div className="h-12 w-12 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center mb-4 transition-colors group-hover:bg-[var(--color-bg-soft)] group-hover:border-[var(--color-border)]">
+      <TrendingUp size={24} className="text-green-600 group-hover:text-[var(--color-primary)] transition-colors" />
+    </div>
+    <h3 className="text-xl font-black italic text-[var(--color-primary-dark)]">With UBUS!</h3>
+    <p className="text-xs text-[var(--color-text-muted)] font-medium mt-1">
+      {completedTrips > 0 ? `${completedTrips} trips completed` : 'Start booking to track your trips'}
+    </p>
+  </div>
+  
+  {/* Bottom Metrics Section */}
+  <div className="relative z-10 pt-8 border-t border-neutral-100 mt-6">
+    <div className="flex items-baseline gap-2">
+      <span className="text-6xl font-black tracking-tighter text-[var(--color-primary-dark)]">
+        {loading ? '...' : totalTrips}
+      </span>
+      <span className="text-[var(--color-primary)] font-bold text-xl uppercase tracking-wider">trips</span>
+    </div>
+    
+    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 mt-2">
+      {loading ? '' : `${totalSpent} XAF spent`}
+    </p>
+    <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-[var(--color-text-muted)]/70 mt-0.5">
+      Lifetime Bookings
+    </p>
+  </div>
+</div>
 
         {/* Upcoming Trip */}
         <div className="md:col-span-5 p-8 rounded-[2rem] bg-white border border-[var(--color-border)] shadow-sm">

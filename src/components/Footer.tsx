@@ -65,8 +65,8 @@ export default function Footer() {
           <div>
             <h4 className="text-white text-sm font-extrabold tracking-tight mb-4">Operational Hours</h4>
             <ul className="space-y-2 text-neutral-400 text-xs font-medium">
-              <li className="flex justify-between max-w-[200px]"><span>Monday - Friday</span> <span className="text-white font-bold">6am – 10pm</span></li>
-              <li className="flex justify-between max-w-[200px]"><span>Saturday</span> <span className="text-white font-bold">8am – 6pm</span></li>
+              <li className="flex justify-between max-w-[200px]"><span>Monday - Friday</span> <span className="text-white font-bold">7am – 5pm</span></li>
+              <li className="flex justify-between max-w-[200px]"><span>Saturday</span> <span className="text-white font-bold">7am – 3pm</span></li>
               <li className="flex justify-between max-w-[200px]"><span>Sunday</span> <span className="text-neutral-500 uppercase tracking-wider text-[10px] font-black">Fleet Standby</span></li>
             </ul>
           </div>

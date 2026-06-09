@@ -1,28 +1,42 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Zap, Eye, EyeOff, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
+import { Zap, Eye, EyeOff, ArrowRight, CheckCircle2, XCircle, Check, X } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 
-// REPLACE THIS PATH WITH YOUR ACTUAL UNDRAW SVG IMAGE FILE
 import studentIllustration from "../../assets/images/studentillu.png"; 
 
-// Creating a FRESH supabase client here to avoid session conflicts
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY,
-  { auth: { persistSession: false } }  // <-- KEY FIX: don't persist session during signup
+  { auth: { persistSession: false } }
 );
+
+// ── Password validation rules ──
+const PASSWORD_RULES = [
+  { id: 'length',  label: 'At least 6 characters',          test: (p: string) => p.length >= 6 },
+  { id: 'letter',  label: 'Contains a letter (a–z or A–Z)', test: (p: string) => /[a-zA-Z]/.test(p) },
+  { id: 'number',  label: 'Contains a number (0–9)',         test: (p: string) => /[0-9]/.test(p) },
+  { id: 'special', label: 'Contains a special character (!@#$%^&*...)', test: (p: string) => /[^a-zA-Z0-9]/.test(p) },
+];
 
 export default function StudentRegisterPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading,      setLoading]      = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null, msg: string }>({
     type: null, msg: ''
   });
   const [form, setForm] = useState({ 
     fullName: '', email: '', studentId: '', phone: '', password: '', agreed: false 
   });
+
+  // ── Live password rule evaluation ──
+  const ruleResults = PASSWORD_RULES.map(rule => ({
+    ...rule,
+    passed: rule.test(form.password),
+  }));
+  const allRulesPassed = ruleResults.every(r => r.passed);
+  const showRules      = form.password.length > 0;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +46,9 @@ export default function StudentRegisterPage() {
       return;
     }
 
-    if (form.password.length < 6) {
-      setStatus({ type: 'error', msg: 'Password must be at least 6 characters.' });
+    // Block submission if password doesn't meet all rules
+    if (!allRulesPassed) {
+      setStatus({ type: 'error', msg: 'Password does not meet all requirements. Please check below.' });
       return;
     }
 
@@ -41,7 +56,6 @@ export default function StudentRegisterPage() {
     setStatus({ type: null, msg: '' });
 
     try {
-      // Step 1: Create auth user
       const { data, error: authError } = await supabase.auth.signUp({
         email: form.email.trim().toLowerCase(),
         password: form.password,
@@ -59,7 +73,6 @@ export default function StudentRegisterPage() {
         return;
       }
 
-      // Step 2: Insert into users table using fetch directly (bypasses session issues)
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users`,
         {
@@ -71,12 +84,12 @@ export default function StudentRegisterPage() {
             'Prefer': 'return=minimal',
           },
           body: JSON.stringify({
-            auth_id: data.user.id,
-            full_name: form.fullName.trim(),
-            email: form.email.trim().toLowerCase(),
-            phone: form.phone.trim(),
+            auth_id:    data.user.id,
+            full_name:  form.fullName.trim(),
+            email:      form.email.trim().toLowerCase(),
+            phone:      form.phone.trim(),
             student_id: form.studentId.trim(),
-            role: 'student',
+            role:       'student',
           }),
         }
       );
@@ -88,7 +101,6 @@ export default function StudentRegisterPage() {
         return;
       }
 
-      // Success
       setStatus({ type: 'success', msg: 'Registration Successful! Redirecting to login...' });
       setLoading(false);
       setTimeout(() => navigate('/login'), 2000);
@@ -115,12 +127,10 @@ export default function StudentRegisterPage() {
 
       <div className="w-full max-w-5xl grid md:grid-cols-2 bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100 p-4 gap-4">
         
-        {/* Left Side: Modern Premium Branding Panel (Inspired by Uploaded Image) */}
+        {/* Left Side: Branding Panel — UNCHANGED */}
         <div className="bg-[#f8fafc] rounded-[2rem] border border-slate-200/60 p-8 md:p-10 flex flex-col justify-between relative overflow-hidden group min-h-[500px]">
-          {/* Subtle Grid Background Effect */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:24px_24px]" />
           
-          {/* Top Info & Decorative Header Elements */}
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-xs">
@@ -132,7 +142,6 @@ export default function StudentRegisterPage() {
                 <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Live Workspace</span>
               </div>
             </div>
-
             <h2 className="text-3xl md:text-4xl font-black text-slate-900 leading-tight tracking-tighter">
               Ride with <br/> Velocity.
             </h2>
@@ -141,22 +150,14 @@ export default function StudentRegisterPage() {
             </p>
           </div>
 
-          {/* Core Image Container: Drop your undraw illustration seamlessly here */}
           <div className="my-auto py-6 flex items-center justify-center relative z-10 w-full max-w-[280px] mx-auto mix-blend-multiply drop-shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
-            <img 
-              src={studentIllustration} 
-              alt="Student Commuter Workspace Illustration" 
-              className="w-full h-auto object-contain max-h-[220px]"
-            />
+            <img src={studentIllustration} alt="Student Commuter Workspace Illustration" className="w-full h-auto object-contain max-h-[220px]" />
           </div>
 
-          {/* Bottom Card / Network Status Widget */}
           <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-xl border border-slate-800 relative z-10 transition-all duration-300 group-hover:border-lime-500/30">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[9px] font-black uppercase tracking-widest text-lime-400">Ecosystem Network Status</p>
-              <div className="px-2 py-0.5 rounded-md bg-lime-500/10 border border-lime-500/20 text-[9px] font-extrabold text-lime-400 uppercase tracking-wider">
-                Active
-              </div>
+              <div className="px-2 py-0.5 rounded-md bg-lime-500/10 border border-lime-500/20 text-[9px] font-extrabold text-lime-400 uppercase tracking-wider">Active</div>
             </div>
             <h4 className="font-bold text-sm tracking-tight text-slate-100">Automated Shuttle Dispatch Matrix</h4>
             <p className="text-[11px] text-slate-400 font-medium leading-normal mt-1">
@@ -165,7 +166,7 @@ export default function StudentRegisterPage() {
           </div>
         </div>
 
-        {/* Right Side: Form (Untouched functionality & styles) */}
+        {/* Right Side: Form */}
         <div className="p-4 md:p-6 lg:p-8 flex flex-col justify-center">
           <div className="mb-6 text-center md:text-left">
             <h3 className="text-2xl font-black text-slate-900 tracking-tight underline decoration-lime-500 decoration-4 underline-offset-4">Create Account</h3>
@@ -175,90 +176,90 @@ export default function StudentRegisterPage() {
           <form className="space-y-4" onSubmit={handleSignup}>
             <div className="space-y-1">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Legal Name</label>
-              <input 
-                required
-                value={form.fullName}
+              <input required value={form.fullName}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                 className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
-                placeholder="Sarah Jenkins" 
-              />
+                placeholder="Sarah Jenkins" />
             </div>
             
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Student ID</label>
-                <input 
-                  required
-                  value={form.studentId}
+                <input required value={form.studentId}
                   onChange={(e) => setForm({ ...form, studentId: e.target.value })}
                   className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
-                  placeholder="ID-2026" 
-                />
+                  placeholder="ID-2026" />
               </div>
               <div className="space-y-1">
                 <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone</label>
-                <input 
-                  required
-                  value={form.phone}
+                <input required value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
                   className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
-                  placeholder="6xx xxx xxx" 
-                />
+                  placeholder="6xx xxx xxx" />
               </div>
             </div>
 
             <div className="space-y-1">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
-              <input 
-                required
-                type="email"
-                value={form.email}
+              <input required type="email" value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all text-sm font-medium" 
-                placeholder="s.jenkins@uni.edu" 
-              />
+                placeholder="s.jenkins@uni.edu" />
             </div>
 
             <div className="space-y-1">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
               <div className="relative">
-                <input 
-                  required
+                <input required
                   type={showPassword ? "text" : "password"} 
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full px-5 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 focus:border-lime-500 outline-none transition-all pr-12 text-sm font-medium" 
-                  placeholder="••••••••"
-                  minLength={6}
+                  className={`w-full px-5 py-3 bg-slate-50 border rounded-xl focus:bg-white focus:ring-4 focus:ring-lime-400/10 outline-none transition-all pr-12 text-sm font-medium ${
+                    showRules
+                      ? allRulesPassed ? 'border-emerald-400 focus:border-emerald-500' : 'border-amber-400 focus:border-amber-500'
+                      : 'border-slate-200 focus:border-lime-500'
+                  }`}
+                  placeholder="Min 6 chars, letters, numbers & symbols"
                 />
-                <button 
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-lime-600 transition-colors"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-lime-600 transition-colors">
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+
+              {/* ── Live password rules checklist ── */}
+              {showRules && (
+                <div className="mt-2 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                  {ruleResults.map(rule => (
+                    <div key={rule.id} className="flex items-center gap-2">
+                      <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
+                        rule.passed ? 'bg-emerald-500' : 'bg-slate-200'
+                      }`}>
+                        {rule.passed
+                          ? <Check size={10} className="text-white" strokeWidth={3} />
+                          : <X size={10} className="text-slate-400" strokeWidth={3} />
+                        }
+                      </div>
+                      <span className={`text-[10px] font-bold ${rule.passed ? 'text-emerald-600' : 'text-slate-400'}`}>
+                        {rule.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 py-1">
-              <input 
-                type="checkbox" 
-                id="agreed"
-                checked={form.agreed}
+              <input type="checkbox" id="agreed" checked={form.agreed}
                 onChange={(e) => setForm({...form, agreed: e.target.checked})}
-                className="accent-lime-600 h-4 w-4 rounded cursor-pointer"
-              />
+                className="accent-lime-600 h-4 w-4 rounded cursor-pointer" />
               <label htmlFor="agreed" className="text-[10px] text-slate-500 font-bold uppercase tracking-tight cursor-pointer">
                 I agree to terms of service.
               </label>
             </div>
 
-            <button 
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-base hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group mt-2 disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-base hover:bg-slate-800 transition-all flex items-center justify-center gap-2 group mt-2 disabled:opacity-50">
               {loading ? "Registering..." : "Create Account"} 
               {!loading && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
             </button>
