@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 import caroussel1  from "../assets/images/caroussel1.jpeg";
 import caroussel2  from "../assets/images/caroussel2.jpeg";
-import ourvision   from "../assets/images/our vision.jpg";
+import shuttle   from "../assets/images/shuttle.png";
 import mola1       from "../assets/images/mola1.jpg"; 
 import mola2       from "../assets/images/mola2.jpg";
 import mola3       from "../assets/images/mola3.jpg";
@@ -14,20 +14,31 @@ const images = { mola1, mola2, mola3 };
 
 import { 
   MapPinned, Cpu, Wallet, Armchair, BarChart3, Headphones,
-  Compass, QrCode, Star, ArrowRight
+  Compass, QrCode, Star, ArrowRight, Navigation, TrendingUp,
+  Clock, Zap, BarChart2
 } from 'lucide-react';
 
-// ── HERO SECTION — UNCHANGED ──
+const SUPABASE_URL     = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// ── Types ──
+interface RouteCard {
+  departure:    string;
+  destination:  string;
+  count:        number;      // how many times booked
+  isPersonal:   boolean;     // true = from this student's history
+  lastUsed?:    string;      // ISO date string
+}
+
+// ── HERO 
 function Hero() {
   const navigate = useNavigate();
-  const carouselImages = [ourvision, caroussel1, caroussel2];
+  const carouselImages = [shuttle, caroussel1, caroussel2];
   const [index, setIndex] = useState(0);
   const { user, isLoggedIn, isLoading } = useAuth();
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % carouselImages.length);
-    }, 4500);
+    const timer = setInterval(() => setIndex(p => (p + 1) % carouselImages.length), 4500);
     return () => clearInterval(timer);
   }, [carouselImages.length]);
 
@@ -45,7 +56,7 @@ function Hero() {
             The future of commuting with <span className="text-[var(--color-primary)]">UB Shuttle</span>
           </motion.h1>
           <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="text-[var(--color-text-muted)] text-sm md:text-sm max-w-xl mb-10 leading-relaxed font-medium">
+            className="text-[var(--color-text-muted)] text-sm max-w-xl mb-10 leading-relaxed font-medium">
             Elevate your campus mobility. Access real-time satellite tracking, smart AI scheduling intervals, and secure digital boarding keys straight from your student hub.
           </motion.p>
           <div className="flex flex-wrap items-center gap-4 min-h-[64px]">
@@ -111,7 +122,7 @@ function Hero() {
   );
 }
 
-// ── HOW IT WORKS — UNCHANGED ──
+// ── HOW IT WORKS 
 function HowItWorks() {
   const steps = [
     { number: "01", title: "Activate Portal Pass", desc: "Log into your secure student portal and activate an operational route pass tailored to your class timetables.", icon: <Compass className="text-blue-600" size={22} />, iconBg: "bg-blue-50 border-blue-100" },
@@ -125,7 +136,7 @@ function HowItWorks() {
           <h2 className="text-[var(--color-primary)] uppercase tracking-[0.2em] text-[10px] font-black mb-3">Workflow</h2>
           <h3 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight">How the system operates</h3>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, i) => (
             <div key={i} className="relative bg-white border border-[var(--color-border)] rounded-[2rem] p-8 flex flex-col justify-between shadow-2xs group hover:border-[var(--color-primary)] transition-colors duration-300">
               <div>
@@ -144,12 +155,12 @@ function HowItWorks() {
   );
 }
 
-// ── FEATURES — UNCHANGED ──
+// ── FEATURES 
 function Features() {
   const features = [
-    { title: "Real-time Tracking", desc: "Live GPS updates for every shuttle on campus. Know exactly where your ride is.", icon: <MapPinned size={22} className="text-indigo-600" />, bg: "bg-indigo-50/70 border-indigo-100" },
-    { title: "Smart Scheduling", desc: "AI-optimized routes based on class timetables to reduce your waiting time.", icon: <Cpu size={22} className="text-fuchsia-600" />, bg: "bg-fuchsia-50/70 border-fuchsia-100" },
-    { title: "Digital Payments", desc: "Seamless MoMo & Student ID integration. Pay in seconds without looking for change.", icon: <Wallet size={22} className="text-emerald-600" />, bg: "bg-emerald-50/70 border-emerald-100" },
+    { title: "Google Direction API", desc: "Live directions from departure to destination point. Know exactly where your heading to.", icon: <MapPinned size={22} className="text-indigo-600" />, bg: "bg-indigo-50/70 border-indigo-100" },
+    { title: "Smart Scheduling", desc: "AI-optimized routes based on most frequent Bookings.", icon: <Cpu size={22} className="text-fuchsia-600" />, bg: "bg-fuchsia-50/70 border-fuchsia-100" },
+    { title: "Digital Payments", desc: "Seamless MoMo & OM integration. Pay for your needs in seconds.", icon: <Wallet size={22} className="text-emerald-600" />, bg: "bg-emerald-50/70 border-emerald-100" },
     { title: "Seat Reservation", desc: "Guarantee your spot before the bus arrives. No more standing in long queues.", icon: <Armchair size={22} className="text-orange-500" />, bg: "bg-orange-50/70 border-orange-100" },
     { title: "Route Analytics", desc: "View peak hours and optimize your departure times for a smoother commute.", icon: <BarChart3 size={22} className="text-sky-600" />, bg: "bg-sky-50/70 border-sky-100" },
     { title: "Instant Support", desc: "24/7 assistance for all transit queries via our dedicated support line.", icon: <Headphones size={22} className="text-rose-500" />, bg: "bg-rose-50/70 border-rose-100" },
@@ -175,7 +186,7 @@ function Features() {
   );
 }
 
-// ── WHY CHOOSE US — UNCHANGED ──
+// ── WHY CHOOSE US 
 function WhyChooseUs() {
   return (
     <section className="bg-white pb-28">
@@ -205,75 +216,279 @@ function WhyChooseUs() {
   );
 }
 
-// ── REVIEWS — UNCHANGED ──
-function Reviews() {
-  const testimonials = [
-    { name: "Brenda T.", role: "FET Student", text: "Real-time mapping entirely eliminated my daily tracking anxieties before morning lectures." },
-    { name: "Mark A.", role: "FS Student", text: "Purchasing my pass directly via mobile money on the web interface took seconds. Highly recommended." },
-    { name: "Dr. Collins N.", role: "Campus Admin", text: "The system provides our tracking team complete diagnostic fleet command data parameters safely." },
-    { name: "Stacy W.", role: "ASTI Student", text: "Seat confirmation tools guarantee I am never stranded at the central loop terminal anymore." },
-    { name: "Emmanuel E.", role: "COT Student", text: "Clean layout interfaces that look premium and work exceptionally well on mobile viewports." },
-  ];
-  const duplicated = [...testimonials, ...testimonials, ...testimonials];
+// ══════════════════════════════════════════════════════════════
+// ── SMART ROUTE RECOMMENDATIONS ──
+
+// Logic:
+//  - Logged-in student → shows THEIR most-booked routes first
+//    (personalised), then fills remaining slots with platform-wide
+//    popular routes they haven't used yet.
+//  - Guest / not logged in → shows only platform-wide top routes
+//    with booking counts as social proof.
+// ══════════════════════════════════════════════════════════════
+function SmartRouteRecommendations() {
+  const navigate             = useNavigate();
+  const { user, isLoggedIn } = useAuth();
+  const [routes,  setRoutes]  = useState<RouteCard[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRoutes();
+  }, [user]);
+
+  const fetchRoutes = async () => {
+    setLoading(true);
+    try {
+      // ── Fetch ALL bookings with departure+destination ──
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/bookings?departure=not.is.null&destination=not.is.null&select=departure,destination,user_id,created_at`,
+        { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+      );
+      const all: any[] = await res.json();
+
+      if (!Array.isArray(all) || all.length === 0) {
+        setRoutes(getDefaultRoutes());
+        setLoading(false);
+        return;
+      }
+
+      // ── Build frequency map for ALL bookings (platform-wide) ──
+      const globalMap: Record<string, { count: number; lastUsed: string }> = {};
+      all.forEach(b => {
+        const key = `${b.departure}|||${b.destination}`;
+        if (!globalMap[key]) globalMap[key] = { count: 0, lastUsed: b.created_at };
+        globalMap[key].count++;
+        if (b.created_at > globalMap[key].lastUsed) globalMap[key].lastUsed = b.created_at;
+      });
+
+      const globalTop: RouteCard[] = Object.entries(globalMap)
+        .map(([key, v]) => {
+          const [departure, destination] = key.split('|||');
+          return { departure, destination, count: v.count, isPersonal: false, lastUsed: v.lastUsed };
+        })
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 12);
+
+      if (!isLoggedIn || !user) {
+        // Guest show top platform routes
+        setRoutes(globalTop);
+        setLoading(false);
+        return;
+      }
+
+      // ── Build personal frequency map for this student ──
+      const mine = all.filter(b => b.user_id === user.auth_id);
+      const personalMap: Record<string, { count: number; lastUsed: string }> = {};
+      mine.forEach(b => {
+        const key = `${b.departure}|||${b.destination}`;
+        if (!personalMap[key]) personalMap[key] = { count: 0, lastUsed: b.created_at };
+        personalMap[key].count++;
+        if (b.created_at > personalMap[key].lastUsed) personalMap[key].lastUsed = b.created_at;
+      });
+
+      const personalRoutes: RouteCard[] = Object.entries(personalMap)
+        .map(([key, v]) => {
+          const [departure, destination] = key.split('|||');
+          return { departure, destination, count: v.count, isPersonal: true, lastUsed: v.lastUsed };
+        })
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6);
+
+      // ── Fill remaining slots with global routes the student hasn't used ──
+      const personalKeys = new Set(personalRoutes.map(r => `${r.departure}|||${r.destination}`));
+      const filler = globalTop
+        .filter(r => !personalKeys.has(`${r.departure}|||${r.destination}`))
+        .slice(0, 12 - personalRoutes.length);
+
+      const combined = [...personalRoutes, ...filler];
+
+      // ── Need at least some cards; fall back to defaults ──
+      setRoutes(combined.length > 0 ? combined : getDefaultRoutes());
+    } catch {
+      setRoutes(getDefaultRoutes());
+    }
+    setLoading(false);
+  };
+
+  // ── Default cards shown when there is no booking data yet ──
+  function getDefaultRoutes(): RouteCard[] {
+    return [
+      { departure: 'Molyko',         destination: 'Main Campus Gate',     count: 0, isPersonal: false },
+      { departure: 'Mile 17 Motor Park', destination: 'Faculty of Engineering', count: 0, isPersonal: false },
+      { departure: 'Small Soppo',    destination: 'Faculty of Science',   count: 0, isPersonal: false },
+      { departure: 'Bonduma',        destination: 'Senate Building',       count: 0, isPersonal: false },
+      { departure: 'Great Soppo',    destination: 'UB Sports Complex',    count: 0, isPersonal: false },
+      { departure: 'GRA Buea',       destination: 'University Bookshop',  count: 0, isPersonal: false },
+      { departure: 'Buea Town',      destination: 'Faculty of Health Sciences', count: 0, isPersonal: false },
+      { departure: 'Check Point',    destination: 'UB Male Hostel',       count: 0, isPersonal: false },
+    ];
+  }
+
+  // ── Format time ago ──
+  const timeAgo = (iso?: string) => {
+    if (!iso) return null;
+    const diff = Date.now() - new Date(iso).getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7)  return `${days}d ago`;
+    if (days < 30) return `${Math.floor(days / 7)}w ago`;
+    return `${Math.floor(days / 30)}mo ago`;
+  };
+
+  // Duplicate cards for infinite scroll effect (same as original Reviews)
+  const displayed = routes.length > 0 ? routes : getDefaultRoutes();
+  const duplicated = [...displayed, ...displayed, ...displayed];
+
   return (
     <section className="bg-white py-24 overflow-hidden border-t border-[var(--color-border)]/60">
-      <div className="max-w-7xl mx-auto px-6 mb-12 text-center">
-        <h2 className="text-[var(--color-primary)] uppercase tracking-[0.2em] text-[10px] font-black mb-3">User Feedback</h2>
-        <h3 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight">Trusted by campus commuters</h3>
+
+      {/* Section header */}
+      <div className="max-w-7xl mx-auto px-6 mb-12">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <h2 className="text-[var(--color-primary)] uppercase tracking-[0.2em] text-[10px] font-black mb-3 flex items-center gap-2">
+              <Zap size={12} /> Smart Recommendations
+            </h2>
+            <h3 className="text-3xl font-black text-[var(--color-primary-dark)] tracking-tight">
+              {isLoggedIn && user
+                ? `Routes for you, ${user.full_name.split(' ')[0]}`
+                : 'Popular campus routes'}
+            </h3>
+            <p className="text-[var(--color-text-muted)] text-xs font-semibold mt-2">
+              {isLoggedIn && user
+                ? 'Personalised routes for you - Select What Suit You Best Today'
+                : 'Most-booked routes across the UB campus network'}
+            </p>
+          </div>
+          {isLoggedIn && user && (
+            <button onClick={() => navigate('/dashboard/student/route-selection')}
+              className="flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider text-white self-start sm:self-auto shrink-0"
+              style={{ background: 'var(--color-primary-dark)' }}>
+              Book a Route <ArrowRight size={14} />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Scrolling cards — same structure as original Reviews */}
       <div className="relative flex w-full overflow-x-hidden py-4 mask-gradient">
-        <motion.div className="flex gap-6 shrink-0 pr-6"
-          animate={{ x: [0, -2000] }} transition={{ ease: "linear", duration: 35, repeat: Infinity }}>
-          {duplicated.map((review, i) => (
-            <div key={i} className="w-[280px] sm:w-[320px] bg-[var(--color-bg-soft)] border border-[var(--color-border)] rounded-2xl p-6 flex flex-col justify-between shrink-0">
-              <div>
-                <div className="flex gap-0.5 mb-4 text-[var(--color-primary)]">
-                  {[...Array(5)].map((_, idx) => <Star key={idx} size={12} fill="currentColor" />)}
-                </div>
-                <p className="text-[var(--color-text-main)] text-xs font-semibold leading-relaxed mb-6">"{review.text}"</p>
+        {loading ? (
+          // Skeleton while loading
+          <div className="flex gap-6 px-6">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="w-[280px] sm:w-[320px] bg-[var(--color-bg-soft)] border border-[var(--color-border)] rounded-2xl p-6 shrink-0 animate-pulse">
+                <div className="h-3 bg-slate-200 rounded-full w-3/4 mb-4" />
+                <div className="h-5 bg-slate-200 rounded-full w-full mb-2" />
+                <div className="h-5 bg-slate-200 rounded-full w-2/3 mb-6" />
+                <div className="h-3 bg-slate-200 rounded-full w-1/2" />
               </div>
-              <div className="flex items-center gap-2.5 pt-4 border-t border-[var(--color-border)]/60">
-                <div className="w-8 h-8 rounded-full bg-[var(--color-primary-dark)] text-white font-black text-[10px] flex items-center justify-center uppercase">
-                  {review.name.charAt(0)}
+            ))}
+          </div>
+        ) : (
+          <motion.div
+            className="flex gap-6 shrink-0 pr-6"
+            animate={{ x: [0, -2000] }}
+            transition={{ ease: "linear", duration: 40, repeat: Infinity }}
+          >
+            {duplicated.map((route, i) => (
+              <div
+                key={i}
+                onClick={() => {
+                  if (isLoggedIn && user) {
+                    navigate('/dashboard/student/shuttle-selection', {
+                      state: { departure: route.departure, destination: route.destination }
+                    });
+                  } else {
+                    navigate('/register');
+                  }
+                }}
+                className="w-[280px] sm:w-[320px] bg-[var(--color-bg-soft)] border border-[var(--color-border)] rounded-2xl p-6 flex flex-col justify-between shrink-0 cursor-pointer hover:border-[var(--color-primary)] hover:shadow-md transition-all duration-200 group"
+              >
+                {/* Top: badge row */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-1.5">
+                    {route.isPersonal ? (
+                      <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-[9px] font-black uppercase tracking-wider">
+                        <Star size={9} fill="currentColor" /> Your Route
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-wider">
+                        <TrendingUp size={9} /> Popular
+                      </span>
+                    )}
+                  </div>
+                  {route.count > 0 && (
+                    <span className="text-[9px] font-black text-[var(--color-text-muted)] flex items-center gap-1">
+                      <BarChart2 size={9} />
+                      {route.count} {route.count === 1 ? 'trip' : 'trips'}
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <h4 className="text-xs font-black text-[var(--color-primary-dark)] leading-none">{review.name}</h4>
-                  <span className="text-[9px] font-bold text-[var(--color-text-muted)] uppercase tracking-wide mt-1 block">{review.role}</span>
+
+                {/* Route display */}
+                <div className="flex-1">
+                  <div className="flex items-start gap-3">
+                    {/* Vertical connector */}
+                    <div className="flex flex-col items-center mt-1 shrink-0">
+                      <div className="w-2.5 h-2.5 rounded-full border-2 border-[var(--color-primary)] bg-white" />
+                      <div className="w-0.5 h-8 bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-border)]" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary-dark)]" />
+                    </div>
+                    <div className="space-y-3 flex-1 min-w-0">
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)]">From</p>
+                        <p className="text-sm font-black text-[var(--color-primary-dark)] truncate group-hover:text-[var(--color-primary)] transition-colors">
+                          {route.departure}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)]">To</p>
+                        <p className="text-sm font-black text-[var(--color-primary-dark)] truncate">
+                          {route.destination}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom row */}
+                <div className="flex items-center justify-between mt-5 pt-4 border-t border-[var(--color-border)]/60">
+                  {route.lastUsed ? (
+                    <span className="text-[9px] font-bold text-[var(--color-text-muted)] flex items-center gap-1">
+                      <Clock size={9} /> {timeAgo(route.lastUsed)}
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-bold text-[var(--color-text-muted)] flex items-center gap-1">
+                      <Navigation size={9} /> UB Campus
+                    </span>
+                  )}
+                  <span className="text-[9px] font-black text-[var(--color-primary)] flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Book now <ArrowRight size={9} />
+                  </span>
                 </div>
               </div>
-            </div>
-          ))}
-        </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </section>
   );
 }
 
-// ── PRICING — logic added, UI identical ──
+// ── PRICING — UNCHANGED from previous implementation ──
 function Pricing() {
-  const navigate   = useNavigate();
+  const navigate             = useNavigate();
   const { user, isLoggedIn } = useAuth();
 
-  // "Book a shuttle" button handler
   const handleBookShuttle = () => {
-    if (!isLoggedIn || !user) {
-      // Not logged in → go to register
-      navigate('/register');
-    } else {
-      // Logged in → go straight to route selection
-      navigate('/dashboard/student/route-selection');
-    }
+    if (!isLoggedIn || !user) navigate('/register');
+    else navigate('/dashboard/student/route-selection');
   };
 
-  // "Pay Platform Charges" button handler
   const handlePlatformCharges = () => {
-    if (!isLoggedIn || !user) {
-      // Not logged in → go to register/login
-      navigate('/register');
-    } else {
-      // Logged in → go to platform charges payment page
-      navigate('/dashboard/student/platform-charges');
-    }
+    if (!isLoggedIn || !user) navigate('/register');
+    else navigate('/dashboard/student/platform-charges');
   };
 
   return (
@@ -283,25 +498,19 @@ function Pricing() {
           <h3 className="text-3xl font-black text-[var(--color-primary-dark)] mb-3 tracking-tight">Flexible Plans</h3>
           <p className="text-[var(--color-text-muted)] font-black uppercase text-[10px] tracking-widest">Pick the pass that fits your schedule</p>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-
-          {/* ── Ticket / Book a shuttle ── */}
           <div className="bg-white p-10 rounded-[2rem] border border-[var(--color-border)] flex flex-col items-center text-center shadow-2xs">
             <h4 className="text-[var(--color-text-muted)] font-black uppercase text-[10px] tracking-widest mb-4">Ticket</h4>
             <div className="flex items-baseline gap-1.5 mb-8">
               <span className="text-[var(--color-primary-dark)] text-4xl font-black tracking-tight">100</span>
               <span className="text-[var(--color-text-muted)] font-black text-sm uppercase">FCFA</span>
             </div>
-            <button
-              onClick={handleBookShuttle}
+            <button onClick={handleBookShuttle}
               className="w-full py-4 rounded-xl font-black text-xs uppercase tracking-widest text-white hover:opacity-90 transition-all active:scale-98 cursor-pointer"
               style={{ background: 'var(--color-primary-dark)' }}>
               Book a shuttle
             </button>
           </div>
-
-          {/* ── Platform Charges ── */}
           <div className="bg-white p-10 rounded-[2rem] border-2 border-[var(--color-primary)] flex flex-col items-center text-center relative overflow-hidden shadow-sm">
             <div className="absolute top-0 right-0 bg-[var(--color-primary)] text-white px-4 py-1.5 rounded-bl-xl font-black text-[9px] uppercase tracking-widest">Best Value</div>
             <h4 className="text-[var(--color-text-muted)] font-black uppercase text-[10px] tracking-widest mb-4">Platform Charges</h4>
@@ -309,13 +518,11 @@ function Pricing() {
               <span className="text-[var(--color-primary-dark)] text-4xl font-black tracking-tight">500</span>
               <span className="text-[var(--color-text-muted)] font-black text-sm uppercase">FCFA</span>
             </div>
-            <button
-              onClick={handlePlatformCharges}
+            <button onClick={handlePlatformCharges}
               className="w-full bg-[var(--color-primary)] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all active:scale-98 shadow-sm cursor-pointer">
               Pay Platform Charges
             </button>
           </div>
-
         </div>
       </div>
     </section>
@@ -330,7 +537,7 @@ export default function LandingPage() {
       <HowItWorks />
       <Features />
       <WhyChooseUs />
-      <Reviews />
+      <SmartRouteRecommendations />
       <Pricing />
     </main>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  Users, CircleDollarSign, CalendarCheck,
+  Users, Wallet, CalendarCheck,
  Bell,  ShieldAlert, 
    QrCode
 } from 'lucide-react';
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
           { label: 'Total Students', value: loading ? '...' : students.length.toString(), trend: `${drivers.length} drivers`, icon: <Users size={22} />, variant: 'primary' },
           { label: "Today's Bookings", value: loading ? '...' : todayBookings.length.toString(), trend: 'Today', icon: <CalendarCheck size={22} />, variant: 'secondary', isLive: true },
           { label: 'Tickets Scanned', value: loading ? '...' : scannedCount.toString(), trend: `${confirmedCount} pending`, icon: <QrCode size={22} />, variant: 'primary' },
-          { label: 'Total Revenue', value: loading ? '...' : `${totalRevenue} XAF`, trend: `${todayRevenue} today`, icon: <CircleDollarSign size={22} />, variant: 'dark' },
+          { label: 'Total Revenue', value: loading ? '...' : `${totalRevenue} XAF`, trend: `${todayRevenue} today`, icon: <Wallet size={22} />, variant: 'dark' },
         ].map((card, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--color-border)] hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-6">

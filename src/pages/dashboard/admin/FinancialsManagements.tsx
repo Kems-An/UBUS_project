@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
    TrendingUp,
-  Wallet, Receipt, CreditCard, Search, Download
+  Wallet, CreditCard, Search, Download
 } from 'lucide-react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -123,7 +123,7 @@ export default function FinancialsManagement() {
           { label: 'Total Revenue', value: `${totalRevenue.toLocaleString()} XAF`, icon: <Wallet size={22} />, trend: 'All time', color: 'var(--color-primary)' },
           { label: "Today's Revenue", value: `${todayRevenue.toLocaleString()} XAF`, icon: <TrendingUp size={22} />, trend: 'Today', color: '#10b981' },
           { label: 'MTN MoMo', value: `${mtnRevenue.toLocaleString()} XAF`, icon: <CreditCard size={22} />, trend: `${mtnCount} tx`, color: '#f59e0b' },
-          { label: 'Orange Money', value: `${orangeRevenue.toLocaleString()} XAF`, icon: <Receipt size={22} />, trend: `${orangeCount} tx`, color: '#f97316' },
+          { label: 'Orange Money', value: `${orangeRevenue.toLocaleString()} XAF`, icon: <CreditCard size={22} />, trend: `${orangeCount} tx`, color: '#f97316' },
         ].map((s, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-[var(--color-border)] hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">

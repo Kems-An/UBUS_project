@@ -12,71 +12,110 @@ const IntroLoader: React.FC<IntroLoaderProps> = ({ onComplete }) => {
     const timer = setTimeout(() => {
       onComplete();
     }, 3200);
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, [onComplete]);
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
       exit={{ 
-        opacity: 0, 
-        scale: 1.05,
-        filter: "blur(10px)",
-        transition: { duration: 0.6, ease: [0.76, 0, 0.24, 1] } 
+        opacity: 0,
+        filter: "blur(20px)",
+        transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
       }}
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white overflow-hidden select-none"
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 overflow-hidden select-none"
     >
-      {/* Centered Logo Workspace */}
-      <div className="relative flex flex-col items-center justify-center">
-        
-        {/* Subtle modern background glow accent that scales up behind the logo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.3 }}
-          animate={{ opacity: 0.15, scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="absolute w-64 h-64 bg-lime-400 rounded-full blur-3xl pointer-events-none"
+      {/* Soft Ambient Dynamic Mesh Background - Optimized size for Mobile Viewports */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div 
+          animate={{
+            scale: [1, 1.1, 1],
+            x: [0, 15, 0],
+            y: [0, -20, 0],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-1/4 -left-1/4 w-[100vw] h-[100vw] sm:w-[80vw] sm:h-[80vw] bg-lime-500/10 rounded-full blur-[80px] sm:blur-[120px]"
         />
+        <motion.div 
+          animate={{
+            scale: [1, 1.15, 1],
+            x: [0, -20, 0],
+            y: [0, 15, 0],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          className="absolute -bottom-1/4 -right-1/4 w-[90vw] h-[90vw] sm:w-[70vw] sm:h-[70vw] bg-emerald-500/10 rounded-full blur-[90px] sm:blur-[140px]"
+        />
+      </div>
 
-        {/* Logo Container with 360° Rotation & Ambient Float Animations */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.3, rotate: -360 }} // Starts rotated at -360 degrees
-          animate={{ 
-            opacity: 1, 
-            scale: [0.3, 1.05, 1], // Clean spring pop effect
-            rotate: 0,              // Unwinds perfectly to 0 (a full 360° spin)
-            y: [0, -10, 0]          // Seamless ambient floating effect
-          }}
-          transition={{
-            opacity: { duration: 0.8, ease: "easeOut" },
-            // Snappy spring curves for both scale and the 360 rotation
-            scale: { type: "spring", damping: 15, stiffness: 90, delay: 0.1 },
-            rotate: { type: "spring", damping: 14, stiffness: 70, delay: 0.1 },
-            // Seamless infinite floating loop begins after the spin finishes
-            y: {
+      {/* Main Workspace */}
+      <div className="relative flex flex-col items-center justify-center z-10 px-4">
+        
+        {/* Kinetic Energy Rings - Styled with responsive width/height */}
+        {[...Array(2)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scale: 0.4 }}
+            animate={{ 
+              opacity: [0, 0.3, 0], 
+              scale: [0.5, 1.5],
+            }}
+            transition={{ 
+              duration: 2, 
+              ease: "easeOut", 
               repeat: Infinity,
-              duration: 2.5,
-              ease: "easeInOut",
-              delay: 1.2 // Delayed slightly so the spin completes first
-            }
-          }}
-          className="w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center relative z-10 drop-shadow-[0_10px_25px_rgba(0,0,0,0.05)]"
-        >
-          <img 
-            src={myLogo} 
-            alt="App System Logo" 
-            className="w-full h-full object-contain pointer-events-none"
+              delay: i * 0.8 
+            }}
+            className="absolute w-36 h-36 sm:w-52 sm:h-52 border border-lime-500/20 rounded-full pointer-events-none"
           />
+        ))}
+
+        {/* Mask Reveal Logo Wrapper */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{
+            duration: 1.2,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+          className="relative"
+        >
+          {/* Smooth Continuous Floating Container - Perfectly proportioned for Mobile */}
+          <motion.div
+            animate={{ y: [0, -6, 0] }}
+            transition={{
+              repeat: Infinity,
+              duration: 3,
+              ease: "easeInOut"
+            }}
+            className="w-28 h-28 sm:w-40 sm:h-40 flex items-center justify-center backdrop-blur-md bg-white/[0.03] border border-white/10 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.5)]"
+          >
+            <img 
+              src={myLogo} 
+              alt="App System Logo" 
+              className="w-full h-full object-contain pointer-events-none drop-shadow-[0_4px_12px_rgba(163,230,53,0.15)]"
+            />
+          </motion.div>
         </motion.div>
       </div>
 
-      {/* Ultra-Minimalist Bottom Progress Loading Microbar */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-slate-100 overflow-hidden">
-        <motion.div 
-          className="h-full bg-lime-500 rounded-r-full"
-          initial={{ width: "0%", x: "-100%" }}
-          animate={{ width: "100%", x: "0%" }}
-          transition={{ duration: 3, ease: [0.65, 0, 0.35, 1] }}
-        />
+      {/* Velvet Subtle Micro Progress Indicator - Clean placement on mobile web viewports */}
+      <div className="absolute bottom-16 sm:bottom-12 flex flex-col items-center gap-2 z-10">
+        <motion.span 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0.4, 0.7, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="text-[10px] sm:text-xs font-medium tracking-[0.25em] sm:tracking-[0.3em] text-slate-400 uppercase"
+        >
+          Loading Platform
+        </motion.span>
+        <div className="w-24 sm:w-32 h-[2px] bg-slate-800 rounded-full overflow-hidden relative">
+          <motion.div 
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-lime-500 to-emerald-400 rounded-full"
+            initial={{ left: "-100%" }}
+            animate={{ left: "100%" }}
+            transition={{ duration: 2.5, ease: "easeInOut", repeat: Infinity }}
+          />
+        </div>
       </div>
 
     </motion.div>
