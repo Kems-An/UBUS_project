@@ -520,7 +520,7 @@ function Pricing() {
             </div>
             <button onClick={handlePlatformCharges}
               className="w-full bg-[var(--color-primary)] text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:opacity-90 transition-all active:scale-98 shadow-sm cursor-pointer">
-              Pay Platform Charges
+              Pay Platform Charge
             </button>
           </div>
         </div>
